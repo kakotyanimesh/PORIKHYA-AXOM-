@@ -20,7 +20,6 @@ export const auth = betterAuth({
       emailVerified: "email_verified",
       createdAt: "created_at",
       updatedAt: "updated_at",
-      displayUsername: "display_username",
     },
     additionalFields: {
       phone_number: {
@@ -61,7 +60,18 @@ export const auth = betterAuth({
       updatedAt: "updated_at",
     },
   },
-  plugins: [username(), nextCookies()],
+  plugins: [
+    username({
+      schema: {
+        user: {
+          fields: {
+            displayUsername: "display_username",
+          },
+        },
+      },
+    }),
+    nextCookies(),
+  ],
 });
 
 export type Session = typeof auth.$Infer.Session;
