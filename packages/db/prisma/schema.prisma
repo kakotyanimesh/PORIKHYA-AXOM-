@@ -1,0 +1,277 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum ExamCategory {
+  ASSAM_TET
+  ASSAM_POLICE
+  APSC
+  ADRE
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+// credentials (password hash, OAuth tokens) live on Account, owned by Better Auth
+model User {
+  id               String   @id @default(cuid())
+  email            String   @unique
+  email_verified   Boolean  @default(false)
+  name             String
+  username         String?  @unique
+  display_username String?
+  phone_number     String
+  image            String?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  sessions       Session[]
+  accounts       Account[]
+  exam_attempts  ExamAttempt[]
+  exam_purchases ExamPurchase[]
+  subscriptions  Subscription[]
+  payments       Payment[]
+
+  @@map("user")
+}
+
+// series is Exam.series_name grouped by, never a real table
+
+model Exam {
+  id                 String       @id @default(cuid())
+  series_name        String
+  name               String
+  subject            String
+  category           ExamCategory
+  duration_minutes   Int
+  total_questions    Int
+  negative_marking   Decimal // default negative-marking ratio, e.g. 0.25
+  pass_score_percent Decimal
+  is_free            Boolean      @default(false) // one free attempt teaser
+  is_pyq_public      Boolean      @default(false) // explicit SEO allowlist, deliberately separate from is_free
+  year               Int?
+  is_active          Boolean      @default(true)
+  created_at         DateTime     @default(now())
+  updated_at         DateTime     @updatedAt
+
+  subsections        Subsection[]
+  questions          Question[]
+  exam_attempts      ExamAttempt[]
+  exam_purchases     ExamPurchase[]
+  subscription_exams SubscriptionExam[]
+}
+
+model Subsection {
+  id                     String   @id @default(cuid())
+  exam_id                String
+  name                   String
+  marks_per_question     Decimal? // overrides parent Exam if set
+  negative_marking_ratio Decimal? // overrides parent Exam if set
+  order                  Int      @default(0)
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  exam      Exam       @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  questions Question[]
+
+  @@index([exam_id])
+}
+
+model Question {
+  id               String   @id @default(cuid())
+  exam_id          String
+  subsection_id    String?
+  content          String
+  content_assamese String?
+  order            Int      @default(0)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  exam       Exam        @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  subsection Subsection? @relation(fields: [subsection_id], references: [id], onDelete: SetNull)
+  options    Option[]
+
+  @@index([exam_id])
+  @@index([subsection_id])
+}
+
+model Option {
+  id            String  @id @default(cuid())
+  question_id   String
+  text          String
+  text_assamese String?
+  is_correct    Boolean @default(false)
+  order         Int     @default(0)
+
+  question Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
+
+  @@index([question_id])
+}
+
+model Plan {
+  id              String         @id @default(cuid())
+  name            String
+  price           Decimal
+  duration_days   Int
+  category_grants ExamCategory[]
+  is_active       Boolean        @default(true)
+  created_at      DateTime       @default(now())
+  updated_at      DateTime       @updatedAt
+
+  subscriptions Subscription[]
+}
+
+// one active Subscription per user — Postgres treats is_active: false as a
+// duplicable value, so this needs a partial unique index (WHERE is_active =
+// true) via raw SQL migration, not a plain @@unique. Add that migration by
+// hand — Prisma DSL can't express it.
+
+model Subscription {
+  id         String   @id @default(cuid())
+  user_id    String
+  plan_id    String
+  is_active  Boolean  @default(true)
+  started_at DateTime @default(now())
+  expires_at DateTime
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user               User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  plan               Plan               @relation(fields: [plan_id], references: [id], onDelete: Restrict)
+  subscription_exams SubscriptionExam[]
+  payments           Payment[]
+
+  @@index([user_id, is_active])
+}
+
+model SubscriptionExam {
+  id              String   @id @default(cuid())
+  subscription_id String
+  exam_id         String
+  created_at      DateTime @default(now())
+
+  subscription Subscription @relation(fields: [subscription_id], references: [id], onDelete: Cascade)
+  exam         Exam         @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+
+  @@unique([subscription_id, exam_id])
+}
+
+// deliberately not a Subscription row — survives independent of subscription state
+
+model ExamPurchase {
+  id           String   @id @default(cuid())
+  user_id      String
+  exam_id      String
+  purchased_at DateTime @default(now())
+
+  user     User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  exam     Exam      @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  payments Payment[]
+
+  @@unique([user_id, exam_id])
+}
+
+// belongs to exactly one of subscription_id / exam_purchase_id, grant code
+// always sets exactly one. Restrict on both — a payment row must never be
+// silently destroyed by deleting the exam/subscription it paid for.
+
+model Payment {
+  id                  String        @id @default(cuid())
+  user_id             String
+  subscription_id     String?
+  exam_purchase_id    String?
+  amount              Decimal
+  currency            String        @default("INR")
+  razorpay_order_id   String
+  razorpay_payment_id String?
+  razorpay_signature  String?
+  status              PaymentStatus @default(PENDING)
+  created_at          DateTime      @default(now())
+  updated_at          DateTime      @updatedAt
+
+  user          User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  subscription  Subscription? @relation(fields: [subscription_id], references: [id], onDelete: Restrict)
+  exam_purchase ExamPurchase? @relation(fields: [exam_purchase_id], references: [id], onDelete: Restrict)
+
+  @@index([user_id])
+}
+
+// one attempt ever, locked at start not completion — no UserProgress/UserResponse
+
+model ExamAttempt {
+  id                String    @id @default(cuid())
+  user_id           String
+  exam_id           String
+  started_at        DateTime  @default(now())
+  completed_at      DateTime? // null = abandoned/in-progress, no resume path
+  raw_score         Decimal?
+  final_score       Decimal?
+  percentage        Decimal?
+  correct_answers   Int?
+  incorrect_answers Int?
+  skipped_questions Int?
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  exam Exam @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, exam_id])
+}
+
+model Session {
+  id         String   @id
+  expires_at DateTime
+  token      String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  ip_address String?
+  user_agent String?
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([user_id])
+  @@map("session")
+}
+
+model Account {
+  id                       String    @id
+  account_id               String
+  provider_id              String
+  user_id                  String
+  user                     User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  access_token             String?
+  refresh_token            String?
+  id_token                 String?
+  access_token_expires_at  DateTime?
+  refresh_token_expires_at DateTime?
+  scope                    String?
+  password                 String?
+  created_at               DateTime  @default(now())
+  updated_at               DateTime  @updatedAt
+
+  @@index([user_id])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expires_at DateTime
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
