@@ -40,6 +40,17 @@ export const auth = betterAuth({
     },
   },
   account: {
+    // ponytail: no email verification flow yet, so this trusts email/password
+    // signups without proof of email ownership — an attacker could
+    // pre-register a victim's email, then inherit the victim's later Google
+    // sign-in into the same account. Revisit before real users sign up: wire
+    // emailVerification.sendVerificationEmail, then drop
+    // requireLocalEmailVerified back to its default (true).
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google"],
+      requireLocalEmailVerified: false,
+    },
     fields: {
       accountId: "account_id",
       providerId: "provider_id",
