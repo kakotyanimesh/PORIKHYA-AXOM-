@@ -89,14 +89,16 @@ model Subsection {
 }
 
 model Question {
-  id               String   @id @default(cuid())
-  exam_id          String
-  subsection_id    String?
-  content          String
-  content_assamese String?
-  order            Int      @default(0)
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
+  id                     String   @id @default(cuid())
+  exam_id                String
+  subsection_id          String?
+  content                String
+  content_assamese       String?
+  solution_text          String?
+  solution_text_assamese String?
+  order                  Int      @default(0)
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
 
   exam       Exam        @relation(fields: [exam_id], references: [id], onDelete: Cascade)
   subsection Subsection? @relation(fields: [subsection_id], references: [id], onDelete: SetNull)

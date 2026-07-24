@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "@repo/ui/globals.css";
 import { DM_Sans, Outfit } from "next/font/google";
 import { cn } from "@repo/ui/lib/utils";
+import { TooltipProvider } from "@repo/ui/components/tooltip";
 
 const outfitHeading = Outfit({ subsets: ["latin"], variable: "--font-heading" });
 
@@ -19,7 +20,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={cn("font-sans", dmSans.variable, outfitHeading.variable)}>
-      <body>{children}</body>
+      <body>
+        <TooltipProvider>{children}</TooltipProvider>
+      </body>
     </html>
   );
 }

@@ -4,7 +4,8 @@
   "private": true,
   "exports": {
     ".": "./src/auth.ts",
-    "./client": "./src/client.ts"
+    "./client": "./src/client.ts",
+    "./cookies": "./src/cookies.ts"
   },
   "scripts": {
     "check-types": "tsc --noEmit"
