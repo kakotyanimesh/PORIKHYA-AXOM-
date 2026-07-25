@@ -31,6 +31,22 @@ export async function getAllTestSeries(): Promise<TestSeriesExam[]> {
   });
 }
 
+// distinct series names — used by generateStaticParams to prerender one static
+// page per series so navigation (incl. back/forward) is instant, not a re-fetch.
+export async function getAllSeriesNames(): Promise<string[]> {
+  "use cache";
+  cacheTag("exam-series:all");
+  cacheLife("hours");
+
+  const rows = await prisma.exam.findMany({
+    where: { is_active: true },
+    distinct: ["series_name"],
+    select: { series_name: true },
+    orderBy: { series_name: "asc" },
+  });
+  return rows.map((r) => r.series_name);
+}
+
 // mock tests (Exam rows) belonging to one series, e.g. every "TET" test.
 const mockTestSelect = {
   id: true,

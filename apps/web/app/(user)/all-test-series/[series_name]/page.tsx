@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getMockTestsBySeriesName } from "@/lib/actions/all-test-series.action";
+import {
+  getAllSeriesNames,
+  getMockTestsBySeriesName,
+} from "@/lib/actions/all-test-series.action";
 import { MockTestTable } from "@/components/mock-test-table";
 import {
   Breadcrumb,
@@ -10,6 +13,13 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@repo/ui/components/breadcrumb";
+
+// prerender one static page per series at build time so back/forward
+// navigation is instant. Series added later render on-demand, then cache.
+export async function generateStaticParams() {
+  const seriesNames = await getAllSeriesNames();
+  return seriesNames.map((series_name) => ({ series_name }));
+}
 
 export default async function SeriesMockTestsPage({
   params,
