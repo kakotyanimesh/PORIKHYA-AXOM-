@@ -4,6 +4,7 @@ import { useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
@@ -17,21 +18,19 @@ export function SigninForm() {
   const [values, setValues] = useState({ email: "", password: "" });
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const parsed = signinSchema.safeParse({ ...values, rememberMe });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Invalid input");
+      toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
       return;
     }
-    setError(null);
     startTransition(async () => {
       const result = await signin(parsed.data);
       if (!result.success) {
-        setError(result.error);
+        toast.error(result.error);
         return;
       }
       router.push("/");
@@ -45,7 +44,11 @@ export function SigninForm() {
         <h1 className="font-heading text-2xl font-medium">Sign in</h1>
         <p className="text-sm text-muted-foreground">
           New here?{" "}
-          <Button variant="link" className="h-auto p-0 text-foreground" render={<Link href="/signup" />}>
+          <Button
+            variant="link"
+            className="h-auto p-0 text-foreground"
+            render={<Link href="/signup" />}
+          >
             Create an account
           </Button>
         </p>
@@ -55,7 +58,9 @@ export function SigninForm() {
         type="button"
         variant="outline"
         className="w-full"
-        onClick={() => authClient.signIn.social({ provider: "google", callbackURL: "/" })}
+        onClick={() =>
+          authClient.signIn.social({ provider: "google", callbackURL: "/" })
+        }
       >
         Continue with Google
       </Button>
@@ -73,7 +78,9 @@ export function SigninForm() {
             id="email"
             type="email"
             value={values.email}
-            onChange={(e) => setValues((v) => ({ ...v, email: e.target.value }))}
+            onChange={(e) =>
+              setValues((v) => ({ ...v, email: e.target.value }))
+            }
             required
           />
         </div>
@@ -82,9 +89,13 @@ export function SigninForm() {
           <div className="relative">
             <Input
               id="password"
+              minLength={8}
+              maxLength={20}
               type={showPassword ? "text" : "password"}
               value={values.password}
-              onChange={(e) => setValues((v) => ({ ...v, password: e.target.value }))}
+              onChange={(e) =>
+                setValues((v) => ({ ...v, password: e.target.value }))
+              }
               required
               className="pr-9"
             />
@@ -96,7 +107,11 @@ export function SigninForm() {
               onClick={() => setShowPassword((s) => !s)}
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              {showPassword ? (
+                <EyeOff className="size-4" />
+              ) : (
+                <Eye className="size-4" />
+              )}
             </Button>
           </div>
         </div>
@@ -113,15 +128,15 @@ export function SigninForm() {
             Forgot password?
           </Button>
         </div>
-        {error ? <p className="text-sm text-destructive">{error}</p> : null}
         <Button type="submit" disabled={pending} className="w-full">
           {pending ? "Signing in..." : "Sign in"}
         </Button>
       </form>
 
-      <p className="text-xs text-muted-foreground">
-        By continuing you agree to our Terms &amp; Privacy Policy.
-      </p>
+      <div className="text-xs text-muted-foreground flex flex-row items-center align-baseline gap-1">
+        <p>By creating an account you agree to our</p>
+        <Link href={"/"}>Terms &amp; Privacy Policy.</Link>
+      </div>
     </div>
   );
 }

@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
+import { Logo } from "@repo/ui/components/logo";
 
 export function Navbar() {
   return (
     <header className="flex items-center justify-between border-b border-border px-6 py-4">
-      <Link href="/" className="font-heading text-lg font-medium">
-        Porikhya <span className="text-brand-accent">Axom</span>
+      <Link href="/">
+        <Logo className="text-lg" />
       </Link>
       <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
         <Link href="/previous-year-papers" className="hover:text-foreground">

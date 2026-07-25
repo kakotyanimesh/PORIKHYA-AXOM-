@@ -60,6 +60,7 @@ model Exam {
   pass_score_percent Decimal
   is_free            Boolean      @default(false) // one free attempt teaser
   is_pyq_public      Boolean      @default(false) // explicit SEO allowlist, deliberately separate from is_free
+  image_url          String?
   year               Int?
   is_active          Boolean      @default(true)
   created_at         DateTime     @default(now())

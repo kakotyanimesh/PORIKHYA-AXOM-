@@ -6,6 +6,7 @@ export type TestSeriesGroup = {
   totalTests: number;
   tags: string[];
   extraTagCount: number;
+  imageUrl: string | null;
 };
 
 const MAX_TAGS = 2;
@@ -30,6 +31,7 @@ export function groupExamsBySeries(exams: TestSeriesExam[]): TestSeriesGroup[] {
       totalTests: seriesExams.length,
       tags: uniqueNames.slice(0, MAX_TAGS),
       extraTagCount: Math.max(0, uniqueNames.length - MAX_TAGS),
+      imageUrl: seriesExams[0]!.image_url,
     };
   });
 }

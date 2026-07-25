@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
+
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
-import { UserIcon } from "lucide-react";
+import { UserIcon, Loader2Icon } from "lucide-react";
 import { cn } from "@repo/ui/lib/utils";
 import {
   DropdownMenu,
@@ -12,7 +13,11 @@ import {
 } from "@repo/ui/components/dropdown-menu";
 import { mainNavItems } from "./nav-items";
 
-const PILL_TRANSITION = { type: "spring", stiffness: 500, damping: 32 } as const;
+const PILL_TRANSITION = {
+  type: "spring",
+  stiffness: 500,
+  damping: 32,
+} as const;
 
 function Pill({ isActive }: { isActive: boolean }) {
   if (!isActive) return null;
@@ -25,12 +30,30 @@ function Pill({ isActive }: { isActive: boolean }) {
   );
 }
 
-function TabContent({ isActive, children }: { isActive: boolean; children: React.ReactNode }) {
+function NavIcon({
+  icon: Icon,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+}) {
+  const { pending } = useLinkStatus();
+  const IconToShow = pending ? Loader2Icon : Icon;
+  return <IconToShow className={cn("size-5", pending && "animate-spin")} />;
+}
+
+function TabContent({
+  isActive,
+  children,
+}: {
+  isActive: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <span
       className={cn(
         "relative z-10 flex flex-col items-center gap-0.5",
-        isActive ? "font-medium text-accent-foreground" : "text-muted-foreground",
+        isActive
+          ? "font-medium text-accent-foreground"
+          : "text-muted-foreground",
       )}
     >
       {children}
@@ -38,7 +61,11 @@ function TabContent({ isActive, children }: { isActive: boolean; children: React
   );
 }
 
-export function MobileBottomNav({ accountMenu }: { accountMenu: React.ReactNode }) {
+export function MobileBottomNav({
+  accountMenu,
+}: {
+  accountMenu: React.ReactNode;
+}) {
   const pathname = usePathname();
 
   return (
@@ -53,7 +80,7 @@ export function MobileBottomNav({ accountMenu }: { accountMenu: React.ReactNode 
           >
             <Pill isActive={isActive} />
             <TabContent isActive={isActive}>
-              <item.icon className="size-5" />
+              <NavIcon icon={item.icon} />
               {isActive && <span className="truncate">{item.title}</span>}
             </TabContent>
           </Link>
@@ -67,7 +94,11 @@ export function MobileBottomNav({ accountMenu }: { accountMenu: React.ReactNode 
             {pathname === "/account" && <span>Profile</span>}
           </TabContent>
         </DropdownMenuTrigger>
-        <DropdownMenuContent side="top" align="end" className="min-w-56 rounded-lg">
+        <DropdownMenuContent
+          side="top"
+          align="end"
+          className="min-w-56 rounded-lg"
+        >
           {accountMenu}
         </DropdownMenuContent>
       </DropdownMenu>

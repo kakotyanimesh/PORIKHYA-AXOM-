@@ -17,7 +17,7 @@ import { SparklesIcon, BadgeCheckIcon, LogOutIcon } from "lucide-react";
 import { authClient } from "@repo/auth/client";
 import { Skeleton } from "@repo/ui/components/skeleton";
 
-export type AccountUser = { name: string; email: string; image?: string | null };
+export type AccountUser = { id: string; name: string; email: string; image?: string | null };
 
 export function accountInitials(name: string) {
   return name

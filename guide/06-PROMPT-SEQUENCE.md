@@ -87,7 +87,7 @@ in the new repo, worth getting the interaction feel right from the start.
 
 > Create `lib/actions/all-test-series.action.ts`. One Server Action:
 > `getAllTestSeries()` returning all active `Exam` rows grouped by
-> `series_name`, each with `id`, `name`, `subject`, `category`, `is_free`,
+> `series_name`, each with `id`, `name`, `subject`, `category`,
 > `total_questions`, `duration_minutes`. Explicit Zod input type (none
 > needed here, empty input) and explicit return type — don't hand-roll the
 > return type, derive it from `Prisma.ExamGetPayload`.

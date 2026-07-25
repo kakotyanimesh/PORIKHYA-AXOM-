@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+import Link from "next/link";
 import { FileTextIcon, LockIcon, PlayIcon, ClockIcon } from "lucide-react";
 import {
   Table,
@@ -10,12 +12,15 @@ import {
 import { Button } from "@repo/ui/components/button";
 import { cn } from "@repo/ui/lib/utils";
 import type { MockTest } from "@/lib/actions/all-test-series.action";
+import { LinkPending, LinkPendingIcon } from "./link-pending";
 
 export function MockTestTable({
   mockTests,
+  seriesName,
   className,
 }: {
   mockTests: MockTest[];
+  seriesName: string;
   className?: string;
 }) {
   return (
@@ -30,8 +35,12 @@ export function MockTestTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {mockTests.map((test) => (
-            <TableRow key={test.id}>
+          {mockTests.map((test, index) => (
+            <TableRow
+              key={test.id}
+              className="content-enter"
+              style={{ "--enter-index": Math.min(index, 8) } as CSSProperties}
+            >
               <TableCell className="whitespace-normal">
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
@@ -57,12 +66,20 @@ export function MockTestTable({
               </TableCell>
               <TableCell className="text-end">
                 {test.is_free ? (
-                  <Button size="sm" type="button">
-                    <PlayIcon />
+                  <Button
+                    size="sm"
+                    className={"w-22"}
+                    render={
+                      <Link
+                        href={`/all-test-series/${seriesName}/${test.id}`}
+                      />
+                    }
+                  >
+                    <LinkPending />
                     Start
                   </Button>
                 ) : (
-                  <Button size="sm" type="button" variant="outline">
+                  <Button size="sm" type="button" variant="secondary">
                     <LockIcon />
                     Unlock
                   </Button>

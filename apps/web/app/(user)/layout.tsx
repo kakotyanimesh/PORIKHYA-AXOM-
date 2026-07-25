@@ -5,9 +5,17 @@ import { NavUserServer } from "@/components/nav-user-server";
 import { NavUserSkeleton } from "@/components/nav-user";
 import { AccountMenuServer } from "@/components/account-menu-server";
 import { AccountMenuSkeleton } from "@/components/account-menu";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@repo/ui/components/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@repo/ui/components/sidebar";
 
-export default function UserLayout({ children }: { children: React.ReactNode }) {
+export default function UserLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <SidebarProvider>
       <AppSidebar
@@ -18,11 +26,11 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
           </Suspense>
         }
       />
-      <SidebarInset>
-        <div className="hidden h-14 shrink-0 items-center border-b px-4 md:flex">
-          <SidebarTrigger />
+      <SidebarInset className="relative">
+        <SidebarTrigger className="absolute left-4 top-4 z-10 hidden md:flex" />
+        <div className="mx-auto w-full max-w-6xl flex-1 pl-4 pr-4 pt-6 pb-24 sm:pt-8 md:pb-5">
+          {children}
         </div>
-        <div className="flex-1 pb-24 md:pb-0">{children}</div>
       </SidebarInset>
       <MobileBottomNav
         accountMenu={

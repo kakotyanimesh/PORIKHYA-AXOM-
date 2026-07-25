@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { NavMain } from "@/components/nav-main";
 import { mainNavItems } from "@/components/nav-items";
+import { Logo } from "@repo/ui/components/logo";
 import {
   Sidebar,
   SidebarContent,
@@ -27,9 +28,7 @@ export function AppSidebar({
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 <span className="text-sm font-bold">PA</span>
               </div>
-              <div className="grid flex-1 text-start text-sm leading-tight">
-                <span className="truncate font-medium">Porikhya Axom</span>
-              </div>
+              <Logo className="flex-1 truncate text-base" badge={false} />
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

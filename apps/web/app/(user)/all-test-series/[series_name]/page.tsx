@@ -1,8 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeftIcon } from "lucide-react";
 import { getMockTestsBySeriesName } from "@/lib/actions/all-test-series.action";
 import { MockTestTable } from "@/components/mock-test-table";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@repo/ui/components/breadcrumb";
 
 export default async function SeriesMockTestsPage({
   params,
@@ -18,16 +25,22 @@ export default async function SeriesMockTestsPage({
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-6 sm:py-8">
-      <Link
-        href="/all-test-series"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeftIcon className="size-4" />
-        Back to test series
-      </Link>
+    <>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink render={<Link href="/all-test-series" />}>
+              Test Series
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage className="font-medium">{seriesName}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
 
-      <div className="mt-6">
+      <div className="content-enter mt-6">
         <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
           Mock Tests · {seriesName}
         </p>
@@ -47,7 +60,7 @@ export default async function SeriesMockTestsPage({
         </span>
       </div>
 
-      <MockTestTable mockTests={mockTests} className="mt-4" />
-    </div>
+      <MockTestTable mockTests={mockTests} seriesName={series_name} className="mt-4" />
+    </>
   );
 }

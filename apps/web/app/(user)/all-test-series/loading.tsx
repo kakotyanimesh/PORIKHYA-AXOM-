@@ -2,7 +2,7 @@ import { Skeleton } from "@repo/ui/components/skeleton";
 
 export default function AllTestSeriesLoading() {
   return (
-    <div className="mx-auto max-w-6xl px-6 py-6 sm:py-8">
+    <>
       <header>
         <Skeleton className="h-9 w-72 sm:h-10" />
         <Skeleton className="mt-3 h-4 w-full max-w-md" />
@@ -39,6 +39,6 @@ export default function AllTestSeriesLoading() {
           ))}
         </div>
       </section>
-    </div>
+    </>
   );
 }

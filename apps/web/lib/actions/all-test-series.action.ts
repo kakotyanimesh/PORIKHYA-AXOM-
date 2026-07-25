@@ -14,6 +14,7 @@ const testSeriesExamSelect = {
   subject: true,
   category: true,
   is_free: true,
+  image_url: true,
 } satisfies Prisma.ExamSelect;
 
 export type TestSeriesExam = Prisma.ExamGetPayload<{ select: typeof testSeriesExamSelect }>;
