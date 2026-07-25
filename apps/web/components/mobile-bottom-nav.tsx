@@ -61,6 +61,28 @@ function TabContent({
   );
 }
 
+export function MobileBottomNavSkeleton() {
+  return (
+    <nav className="fixed inset-x-4 bottom-4 z-40 flex items-center justify-between gap-1 rounded-full border bg-card p-1.5 shadow-lg md:hidden">
+      {mainNavItems.map((item) => (
+        <div
+          key={item.title}
+          className="relative flex flex-col items-center justify-center rounded-full px-3 py-2 text-[11px]"
+        >
+          <TabContent isActive={false}>
+            <item.icon className="size-5" />
+          </TabContent>
+        </div>
+      ))}
+      <div className="relative flex flex-col items-center justify-center rounded-full px-3 py-2 text-[11px]">
+        <TabContent isActive={false}>
+          <UserIcon className="size-5" />
+        </TabContent>
+      </div>
+    </nav>
+  );
+}
+
 export function MobileBottomNav({
   accountMenu,
 }: {
