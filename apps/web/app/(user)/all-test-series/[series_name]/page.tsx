@@ -1,9 +1,12 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   getAllSeriesNames,
   getMockTestsBySeriesName,
+  type MockTest,
 } from "@/lib/actions/all-test-series.action";
+import { getCompletedExamIds } from "@/lib/actions/start-exam-attempt.action";
 import { MockTestTable } from "@/components/mock-test-table";
 import {
   Breadcrumb,
@@ -70,7 +73,38 @@ export default async function SeriesMockTestsPage({
         </span>
       </div>
 
-      <MockTestTable mockTests={mockTests} seriesName={series_name} className="mt-4" />
+      <Suspense
+        fallback={
+          <MockTestTable
+            mockTests={mockTests}
+            seriesName={series_name}
+            completedExamIds={new Set()}
+            className="mt-4"
+          />
+        }
+      >
+        <MockTestTableWithAttempts mockTests={mockTests} seriesName={series_name} />
+      </Suspense>
     </>
+  );
+}
+
+// per-user, never cached — must reflect a submit that just happened, so it's
+// isolated in its own Suspense boundary instead of blocking the static shell
+async function MockTestTableWithAttempts({
+  mockTests,
+  seriesName,
+}: {
+  mockTests: MockTest[];
+  seriesName: string;
+}) {
+  const completedExamIds = await getCompletedExamIds(mockTests.map((t) => t.id));
+  return (
+    <MockTestTable
+      mockTests={mockTests}
+      seriesName={seriesName}
+      completedExamIds={completedExamIds}
+      className="mt-4"
+    />
   );
 }

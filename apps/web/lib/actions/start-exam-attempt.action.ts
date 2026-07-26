@@ -56,3 +56,16 @@ export async function getExamAttemptStatus(
 
   return existing ? { attempted: true, completed: existing.completed_at !== null } : { attempted: false };
 }
+
+// bulk version for listing tables — never cached (user-specific, must reflect
+// a submit that just happened), so there's no tag to invalidate
+export async function getCompletedExamIds(examIds: string[]): Promise<Set<string>> {
+  if (examIds.length === 0) return new Set();
+  const user = await getCurrentUser();
+
+  const completed = await prisma.examAttempt.findMany({
+    where: { user_id: user.id, exam_id: { in: examIds }, completed_at: { not: null } },
+    select: { exam_id: true },
+  });
+  return new Set(completed.map((a) => a.exam_id));
+}

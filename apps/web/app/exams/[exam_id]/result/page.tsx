@@ -1,16 +1,25 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { prisma } from "@repo/db";
-import { Badge } from "@repo/ui/components/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/ui/components/card";
 import { getCurrentUser } from "@/lib/utils/current-user";
+import type { SectionBreakdownItem } from "@/lib/actions/submit-exam-attempt.action";
+import { ExamResultView, type ExamResultData } from "@/components/exam-result/exam-result-view";
 
-export default async function ExamResultPage({
+// auth + per-user attempt reads are dynamic; keep them inside Suspense so the
+// route isn't a blocking prerender under Cache Components (PPR)
+export default function ExamResultPage({
+  params,
+}: {
+  params: Promise<{ exam_id: string }>;
+}) {
+  return (
+    <Suspense>
+      <ExamResultContent params={params} />
+    </Suspense>
+  );
+}
+
+async function ExamResultContent({
   params,
 }: {
   params: Promise<{ exam_id: string }>;
@@ -22,56 +31,56 @@ export default async function ExamResultPage({
     prisma.examAttempt.findUnique({
       where: { user_id_exam_id: { user_id: user.id, exam_id } },
       select: {
+        started_at: true,
         completed_at: true,
-        raw_score: true,
         final_score: true,
-        percentage: true,
         correct_answers: true,
         incorrect_answers: true,
         skipped_questions: true,
+        percentage: true,
+        section_breakdown: true,
       },
     }),
     prisma.exam.findUnique({
       where: { id: exam_id },
-      select: { name: true, pass_score_percent: true, total_questions: true },
+      select: { name: true, duration_minutes: true, negative_marking: true },
     }),
   ]);
 
-  if (!attempt || !attempt.completed_at || !exam) notFound();
+  if (
+    !attempt ||
+    !attempt.completed_at ||
+    !exam ||
+    attempt.final_score === null ||
+    attempt.correct_answers === null ||
+    attempt.incorrect_answers === null ||
+    attempt.skipped_questions === null ||
+    attempt.percentage === null
+  ) {
+    notFound();
+  }
 
-  const percentage = attempt.percentage!.toNumber();
-  const passed = percentage >= exam.pass_score_percent.toNumber();
+  const sections = (attempt.section_breakdown as SectionBreakdownItem[] | null) ?? [];
+  const totalMarks = sections.reduce((sum, s) => sum + s.total_marks, 0);
+  const cutoff = sections.reduce((sum, s) => sum + s.cutoff, 0);
+  const timeTakenMinutes =
+    (attempt.completed_at.getTime() - attempt.started_at.getTime()) / 60000;
 
-  return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-4 p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            {exam.name}
-            <Badge variant={passed ? "default" : "destructive"}>
-              {passed ? "Passed" : "Not passed"}
-            </Badge>
-          </CardTitle>
-          <CardDescription>{percentage.toFixed(2)}%</CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
-          <Stat label="Final score" value={attempt.final_score!.toString()} />
-          <Stat label="Raw score" value={attempt.raw_score!.toString()} />
-          <Stat label="Correct" value={String(attempt.correct_answers)} />
-          <Stat label="Incorrect" value={String(attempt.incorrect_answers)} />
-          <Stat label="Skipped" value={String(attempt.skipped_questions)} />
-          <Stat label="Total questions" value={String(exam.total_questions)} />
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+  const data: ExamResultData = {
+    examName: exam.name,
+    submittedAt: attempt.completed_at.toLocaleString(),
+    finalScore: attempt.final_score.toNumber(),
+    totalMarks,
+    cutoff,
+    correctAnswers: attempt.correct_answers,
+    incorrectAnswers: attempt.incorrect_answers,
+    skippedQuestions: attempt.skipped_questions,
+    percentage: attempt.percentage.toNumber(),
+    timeTakenMinutes,
+    durationMinutes: exam.duration_minutes,
+    markingLabel: `+1 correct · −${exam.negative_marking.toNumber()} wrong`,
+    sections,
+  };
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium">{value}</span>
-    </div>
-  );
+  return <ExamResultView data={data} />;
 }

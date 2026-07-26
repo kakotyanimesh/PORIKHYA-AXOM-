@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { FileTextIcon, LockIcon, PlayIcon, ClockIcon } from "lucide-react";
+import { FileTextIcon, LockIcon, ClockIcon, ChartColumnIcon } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -12,15 +12,17 @@ import {
 import { Button } from "@repo/ui/components/button";
 import { cn } from "@repo/ui/lib/utils";
 import type { MockTest } from "@/lib/actions/all-test-series.action";
-import { LinkPending, LinkPendingIcon } from "./link-pending";
+import { LinkPending } from "./link-pending";
 
 export function MockTestTable({
   mockTests,
   seriesName,
+  completedExamIds,
   className,
 }: {
   mockTests: MockTest[];
   seriesName: string;
+  completedExamIds: Set<string>;
   className?: string;
 }) {
   return (
@@ -65,7 +67,17 @@ export function MockTestTable({
                 {test.duration_minutes} min
               </TableCell>
               <TableCell className="text-end">
-                {test.is_free ? (
+                {completedExamIds.has(test.id) ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-22"
+                    render={<Link href={`/exams/${test.id}/result`} />}
+                  >
+                    <ChartColumnIcon />
+                    Analyse
+                  </Button>
+                ) : test.is_free ? (
                   <Button
                     size="sm"
                     className={"w-22"}

@@ -223,6 +223,7 @@ model ExamAttempt {
   correct_answers   Int?
   incorrect_answers Int?
   skipped_questions Int?
+  section_breakdown Json? // per-Subsection score summary, written once at submit — see SectionBreakdownItem in submit-exam-attempt.action.ts
 
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
   exam Exam @relation(fields: [exam_id], references: [id], onDelete: Cascade)

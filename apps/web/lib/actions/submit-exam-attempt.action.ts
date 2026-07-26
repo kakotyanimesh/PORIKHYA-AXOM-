@@ -12,9 +12,30 @@ import {
 // {questionId, selectedOptionId}[] and nothing else is trusted.
 const scoringQuestionSelect = {
   id: true,
-  subsection: { select: { marks_per_question: true, negative_marking_ratio: true } },
+  subsection: {
+    select: {
+      id: true,
+      name: true,
+      order: true,
+      marks_per_question: true,
+      negative_marking_ratio: true,
+    },
+  },
   options: { select: { id: true, is_correct: true } },
 } satisfies Prisma.QuestionSelect;
+
+export type SectionBreakdownItem = {
+  section_id: string | null;
+  section_name: string;
+  total_questions: number;
+  correct: number;
+  incorrect: number;
+  skipped: number;
+  score: number;
+  total_marks: number;
+  cutoff: number;
+  cleared: boolean;
+};
 
 export type SubmitExamAttemptResult = {
   raw_score: number;
@@ -23,11 +44,23 @@ export type SubmitExamAttemptResult = {
   correct_answers: number;
   incorrect_answers: number;
   skipped_questions: number;
+  section_breakdown: SectionBreakdownItem[];
 };
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
+
+type SectionAccumulator = {
+  section_name: string;
+  order: number;
+  total_questions: number;
+  correct: number;
+  incorrect: number;
+  skipped: number;
+  score: number;
+  total_marks: number;
+};
 
 // single write for the whole attempt — computed here, never trusted from the
 // client, and written into the same ExamAttempt row locked at start
@@ -46,28 +79,51 @@ export async function submitExamAttempt(
 
   const exam = await prisma.exam.findUniqueOrThrow({
     where: { id: parsed.exam_id },
-    select: { negative_marking: true, questions: { select: scoringQuestionSelect } },
+    select: {
+      negative_marking: true,
+      pass_score_percent: true,
+      questions: { select: scoringQuestionSelect },
+    },
   });
   const examNegativeRatio = exam.negative_marking.toNumber();
+  const passPercent = exam.pass_score_percent.toNumber();
 
   const answerMap = new Map(parsed.answers.map((a) => [a.question_id, a.selected_option_id]));
+  const sections = new Map<string, SectionAccumulator>();
 
   let rawScore = 0;
   let penalty = 0;
-  let totalPossible = 0;
   let correct = 0;
   let incorrect = 0;
   let skipped = 0;
 
   for (const question of exam.questions) {
-    const marksPerQuestion = question.subsection?.marks_per_question?.toNumber() ?? 1;
-    const negativeRatio =
-      question.subsection?.negative_marking_ratio?.toNumber() ?? examNegativeRatio;
-    totalPossible += marksPerQuestion;
+    const subsection = question.subsection;
+    const marksPerQuestion = subsection?.marks_per_question?.toNumber() ?? 1;
+    const negativeRatio = subsection?.negative_marking_ratio?.toNumber() ?? examNegativeRatio;
+
+    const sectionKey = subsection?.id ?? "ungrouped";
+    let section = sections.get(sectionKey);
+    if (!section) {
+      section = {
+        section_name: subsection?.name ?? "General",
+        order: subsection?.order ?? Number.MAX_SAFE_INTEGER,
+        total_questions: 0,
+        correct: 0,
+        incorrect: 0,
+        skipped: 0,
+        score: 0,
+        total_marks: 0,
+      };
+      sections.set(sectionKey, section);
+    }
+    section.total_questions++;
+    section.total_marks += marksPerQuestion;
 
     const selectedOptionId = answerMap.get(question.id);
     if (!selectedOptionId) {
       skipped++;
+      section.skipped++;
       continue;
     }
 
@@ -76,15 +132,40 @@ export async function submitExamAttempt(
     );
     if (isCorrect) {
       correct++;
+      section.correct++;
       rawScore += marksPerQuestion;
+      section.score += marksPerQuestion;
     } else {
       incorrect++;
-      penalty += marksPerQuestion * negativeRatio;
+      section.incorrect++;
+      const questionPenalty = marksPerQuestion * negativeRatio;
+      penalty += questionPenalty;
+      section.score -= questionPenalty;
     }
   }
 
   const finalScore = rawScore - penalty;
+  const totalPossible = [...sections.values()].reduce((sum, s) => sum + s.total_marks, 0);
   const percentage = totalPossible > 0 ? (finalScore / totalPossible) * 100 : 0;
+
+  const sectionBreakdown: SectionBreakdownItem[] = [...sections.entries()]
+    .sort(([, a], [, b]) => a.order - b.order)
+    .map(([sectionKey, s]) => {
+      const score = round2(s.score);
+      const cutoff = round2((s.total_marks * passPercent) / 100);
+      return {
+        section_id: sectionKey === "ungrouped" ? null : sectionKey,
+        section_name: s.section_name,
+        total_questions: s.total_questions,
+        correct: s.correct,
+        incorrect: s.incorrect,
+        skipped: s.skipped,
+        score,
+        total_marks: round2(s.total_marks),
+        cutoff,
+        cleared: score >= cutoff,
+      };
+    });
 
   const result: SubmitExamAttemptResult = {
     raw_score: round2(rawScore),
@@ -93,6 +174,7 @@ export async function submitExamAttempt(
     correct_answers: correct,
     incorrect_answers: incorrect,
     skipped_questions: skipped,
+    section_breakdown: sectionBreakdown,
   };
 
   await prisma.examAttempt.update({
