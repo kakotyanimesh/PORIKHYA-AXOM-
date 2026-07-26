@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { PauseIcon, LayoutGridIcon } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
 import {
@@ -21,6 +22,7 @@ import {
 } from "@repo/ui/components/sheet";
 import { useExamTimer } from "@/hooks/use-exam-timer";
 import { useLazyQuestions } from "@/hooks/use-lazy-questions";
+import { submitExamAttempt } from "@/lib/actions/submit-exam-attempt.action";
 import type { ExamAttemptInit } from "@/lib/actions/lazyquestions.action";
 import { QuestionPalette } from "./question-palette";
 import { QuestionPanel } from "./question-panel";
@@ -57,18 +59,34 @@ export function ExamAttemptShell({
   const router = useRouter();
   const lazy = useLazyQuestions(examId, init);
   const [indexInSection, setIndexInSection] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, { questionId: string; optionId: string }>>(
+    {},
+  );
   const [marked, setMarked] = useState<Set<string>>(new Set());
   const [visited, setVisited] = useState<Set<string>>(new Set());
   const [submitOpen, setSubmitOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [language, setLanguage] = useState<"en" | "as">("en");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // scoring/results (guide step 14) isn't built yet — this is a stub until that lands
-  const submitExam = () => {
+  const submitExam = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     timer.clear();
-    lazy.reset();
-    router.push("/dashboard");
+    try {
+      await submitExamAttempt({
+        exam_id: examId,
+        answers: Object.values(answers).map((a) => ({
+          question_id: a.questionId,
+          selected_option_id: a.optionId,
+        })),
+      });
+      lazy.reset();
+      router.push(`/exams/${examId}/result`);
+    } catch {
+      toast.error("Couldn't submit your attempt. Please try again.");
+      setIsSubmitting(false);
+    }
   };
 
   const timer = useExamTimer(examId, durationMinutes, submitExam);
@@ -182,9 +200,13 @@ export function ExamAttemptShell({
           questionNumber={questionNumber}
           totalQuestions={totalQuestions}
           isLoading={lazy.isLoading}
-          selectedOptionId={answers[currentKey]}
+          selectedOptionId={answers[currentKey]?.optionId}
           onSelectOption={(optionId) =>
-            setAnswers((prev) => ({ ...prev, [currentKey]: optionId }))
+            currentQuestion &&
+            setAnswers((prev) => ({
+              ...prev,
+              [currentKey]: { questionId: currentQuestion.id, optionId },
+            }))
           }
           language={language}
         />
@@ -278,11 +300,11 @@ export function ExamAttemptShell({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSubmitOpen(false)}>
+            <Button variant="outline" onClick={() => setSubmitOpen(false)} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={submitExam}>
-              Submit
+            <Button variant="destructive" onClick={submitExam} disabled={isSubmitting}>
+              {isSubmitting ? "Submitting…" : "Submit"}
             </Button>
           </DialogFooter>
         </DialogContent>
