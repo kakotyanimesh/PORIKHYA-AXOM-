@@ -10,17 +10,3 @@ export function LinkPending({ className }: { className?: string }) {
   return <Loader2Icon className={cn("size-4 animate-spin", className)} />;
 }
 
-
-
-export function LinkPendingIcon({
-    icon: Icon,
-    className,
-  }: {
-    icon: React.ComponentType<{ className?: string }>;
-    className?: string;
-  }) {
-    const { pending } = useLinkStatus();
-    const IconToShow = pending ? Loader2Icon : Icon;
-    return <IconToShow className={cn(className, pending && "animate-spin")} />;
-  }
-

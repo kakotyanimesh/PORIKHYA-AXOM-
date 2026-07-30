@@ -7,6 +7,12 @@ import {
   type GetTestSeriesBySeriesNameInput,
 } from "../validations/test-series.validation";
 
+// built once at module load — rebuilding an Intl formatter per call is slow
+const indexedDateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  year: "numeric",
+});
+
 const testSeriesExamSelect = {
   id: true,
   series_name: true,
@@ -86,7 +92,5 @@ export async function getIndexedDateLabel(): Promise<string> {
   "use cache";
   cacheLife("hours");
 
-  return new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" })
-    .format(new Date())
-    .toUpperCase();
+  return indexedDateFormatter.format(new Date()).toUpperCase();
 }

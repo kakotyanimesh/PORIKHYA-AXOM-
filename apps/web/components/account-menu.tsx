@@ -16,17 +16,9 @@ import {
 import { SparklesIcon, BadgeCheckIcon, LogOutIcon } from "lucide-react";
 import { authClient } from "@repo/auth/client";
 import { Skeleton } from "@repo/ui/components/skeleton";
+import { accountInitials } from "./account-initials";
 
 export type AccountUser = { id: string; name: string; email: string; image?: string | null };
-
-export function accountInitials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 export function AccountMenuSkeleton() {
   return (
