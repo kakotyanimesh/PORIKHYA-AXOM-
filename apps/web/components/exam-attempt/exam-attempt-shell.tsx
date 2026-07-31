@@ -84,6 +84,10 @@ export function ExamAttemptShell({
       lazy.reset();
       router.push(`/exams/${examId}/result`);
     } catch {
+      // reset only on failure — success navigates away and the button must stay
+      // disabled through the transition, else a slow nav lets the user re-submit
+      // a one-attempt-ever exam. react-doctor flags this as reset-outside-finally
+      // but a finally would reintroduce that double-submit; deliberate.
       toast.error("Couldn't submit your attempt. Please try again.");
       setIsSubmitting(false);
     }

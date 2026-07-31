@@ -1,16 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Area, AreaChart, XAxis, YAxis } from "recharts";
+import dynamic from "next/dynamic";
 import { Card } from "@repo/ui/components/card";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@repo/ui/components/chart";
 import { cn } from "@repo/ui/lib/utils";
 import type { DashboardAttempt } from "@/lib/actions/dashboard.action";
+
+// recharts is heavy and browser-only — load the chart on demand so it stays out
+// of the initial dashboard bundle (fallback sized to the chart to avoid layout
+// shift)
+const ScoreTrendChart = dynamic(
+  () => import("./score-trend-chart").then((m) => m.ScoreTrendChart),
+  { ssr: false, loading: () => <div className="mt-6 h-40 w-full" /> },
+);
 
 type RangeKey = "1W" | "1M" | "3M" | "All";
 
@@ -21,11 +23,14 @@ const RANGE_DAYS: Record<RangeKey, number> = {
   All: Infinity,
 };
 
-const chartConfig = {
-  percentage: { label: "Score", color: "var(--primary)" },
-} satisfies ChartConfig;
-
-const monthDay = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
+// explicit timeZone so server (UTC) and browser (user's TZ) format the same
+// day — without it a date near midnight renders differently and hydration
+// mismatches. App audience is Assam/India, so pin to IST.
+const monthDay = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  timeZone: "Asia/Kolkata",
+});
 
 export function ScoreTrendCard({
   attempts,
@@ -90,35 +95,7 @@ export function ScoreTrendCard({
       </div>
 
       {data.length > 1 ? (
-        <ChartContainer config={chartConfig} className="mt-6 h-40 w-full">
-          <AreaChart data={data} margin={{ left: 0, right: 8, top: 8 }}>
-            <defs>
-              <linearGradient id="scoreFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.12} />
-                <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <XAxis
-              dataKey="label"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              minTickGap={24}
-              className="text-xs"
-            />
-            <YAxis hide domain={[0, 100]} />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Area
-              dataKey="percentage"
-              type="monotone"
-              stroke="var(--primary)"
-              strokeWidth={2}
-              fill="url(#scoreFill)"
-              dot={false}
-              activeDot={{ r: 4 }}
-            />
-          </AreaChart>
-        </ChartContainer>
+        <ScoreTrendChart data={data} />
       ) : (
         <div className="mt-6 flex h-40 items-center justify-center px-6 text-center text-sm text-muted-foreground">
           {data.length === 0
