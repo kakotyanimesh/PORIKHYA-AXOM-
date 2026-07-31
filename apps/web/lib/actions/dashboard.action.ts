@@ -29,6 +29,7 @@ type AttemptRow = Prisma.ExamAttemptGetPayload<{ select: typeof attemptSelect }>
 
 export type DashboardAttempt = {
   id: string;
+  examId: string;
   examName: string;
   subject: string;
   totalQuestions: number;
@@ -37,17 +38,14 @@ export type DashboardAttempt = {
   percentage: number;
 };
 
-export type DashboardAvailableExam = {
-  id: string;
-  name: string;
-  subject: string;
-  series_name: string;
-  is_free: boolean;
-  totalQuestions: number;
-  durationMinutes: number;
+export type DashboardSeries = {
+  seriesName: string;
+  subjectLabel: string;
+  testCount: number;
 };
 
-export type DashboardData = {
+// per-user stats block — everything that changes when the user submits an exam
+export type UserDashboardStats = {
   userName: string;
   totalTests: number;
   avgScore: number; // percentage, 0 when no attempts
@@ -55,7 +53,7 @@ export type DashboardData = {
   thisWeekCount: number;
   lastAttempt: { name: string; percentage: number; delta: number | null } | null;
   attempts: DashboardAttempt[]; // newest first
-  available: DashboardAvailableExam[]; // not-yet-attempted active exams
+  availableCount: number; // active exams not yet attempted (header copy)
 };
 
 function startOfWeek(now: Date): Date {
@@ -75,6 +73,7 @@ function avg(nums: number[]): number {
 function toAttempt(r: AttemptRow): DashboardAttempt {
   return {
     id: r.id,
+    examId: r.exam.id,
     examName: r.exam.name,
     subject: r.exam.subject,
     totalQuestions: r.exam.total_questions,
@@ -84,12 +83,15 @@ function toAttempt(r: AttemptRow): DashboardAttempt {
   };
 }
 
-export async function getDashboardData(
+// Per-user, private cache. Held indefinitely and invalidated explicitly when
+// the user submits an exam (revalidateTag(`dashboard:${userId}`) in
+// submit-exam-attempt.action) — that's what refreshes the graph/stats/recent.
+export async function getUserDashboardStats(
   userId: string,
   userName: string,
-): Promise<DashboardData> {
+): Promise<UserDashboardStats> {
   "use cache: private";
-  cacheLife("minutes");
+  cacheLife("days");
   cacheTag(`dashboard:${userId}`);
 
   const rows = await prisma.examAttempt.findMany({
@@ -128,29 +130,9 @@ export async function getDashboardData(
     : null;
 
   const attemptedExamIds = rows.map((r) => r.exam.id);
-  const availableRows = await prisma.exam.findMany({
+  const availableCount = await prisma.exam.count({
     where: { is_active: true, id: { notIn: attemptedExamIds } },
-    select: {
-      id: true,
-      name: true,
-      subject: true,
-      series_name: true,
-      is_free: true,
-      total_questions: true,
-      duration_minutes: true,
-    },
-    orderBy: [{ series_name: "asc" }, { name: "asc" }],
-    take: 6,
   });
-  const available: DashboardAvailableExam[] = availableRows.map((e) => ({
-    id: e.id,
-    name: e.name,
-    subject: e.subject,
-    series_name: e.series_name,
-    is_free: e.is_free,
-    totalQuestions: e.total_questions,
-    durationMinutes: e.duration_minutes,
-  }));
 
   return {
     userName,
@@ -160,6 +142,51 @@ export async function getDashboardData(
     thisWeekCount,
     lastAttempt,
     attempts,
-    available,
+    availableCount,
   };
+}
+
+// Shared (not per-user) catalogue data. Same tag as the all-test-series page,
+// so publishing/editing exams invalidates both. Long-lived — this lands in the
+// dashboard's static shell, which is why the card paints instantly.
+export async function getRecentSeries(): Promise<DashboardSeries[]> {
+  "use cache";
+  cacheTag("exam-series:all");
+  cacheLife({ stale: 300, revalidate: 60 * 60 * 15, expire: 60 * 60 * 24 });
+
+  // series = Exam.series_name grouped, never a table. newest-first, so the first
+  // row per series is its latest exam and insertion order gives recent series
+  // first. Take 3.
+  const seriesRows = await prisma.exam.findMany({
+    where: { is_active: true },
+    select: { series_name: true, subject: true },
+    orderBy: { created_at: "desc" },
+  });
+  const seen = new Map<string, DashboardSeries>();
+  for (const r of seriesRows) {
+    const g = seen.get(r.series_name);
+    if (g) g.testCount += 1;
+    else
+      seen.set(r.series_name, {
+        seriesName: r.series_name,
+        subjectLabel: r.subject,
+        testCount: 1,
+      });
+  }
+  return Array.from(seen.values()).slice(0, 3);
+}
+
+const weekdayFormatter = new Intl.DateTimeFormat("en-US", {
+  weekday: "long",
+  day: "numeric",
+  month: "short",
+});
+
+// `new Date()` in the page render would block the static shell. Baking it into
+// a cache boundary keeps the date pill part of the prerendered shell; refreshes
+// hourly, fine for a weekday label.
+export async function getTodayLabel(): Promise<string> {
+  "use cache";
+  cacheLife("hours");
+  return weekdayFormatter.format(new Date());
 }

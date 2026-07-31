@@ -22,7 +22,7 @@ const RANGE_DAYS: Record<RangeKey, number> = {
 };
 
 const chartConfig = {
-  percentage: { label: "Score", color: "var(--foreground)" },
+  percentage: { label: "Score", color: "var(--primary)" },
 } satisfies ChartConfig;
 
 const monthDay = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
@@ -77,9 +77,9 @@ export function ScoreTrendCard({
               type="button"
               onClick={() => setRange(key)}
               className={cn(
-                "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                "rounded-full px-3 py-1 text-xs font-medium transition-[color,background-color,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-95",
                 range === key
-                  ? "bg-foreground text-background"
+                  ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -89,13 +89,13 @@ export function ScoreTrendCard({
         </div>
       </div>
 
-      {data.length > 0 ? (
-        <ChartContainer config={chartConfig} className="mt-6 h-64 w-full">
+      {data.length > 1 ? (
+        <ChartContainer config={chartConfig} className="mt-6 h-40 w-full">
           <AreaChart data={data} margin={{ left: 0, right: 8, top: 8 }}>
             <defs>
               <linearGradient id="scoreFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--foreground)" stopOpacity={0.12} />
-                <stop offset="100%" stopColor="var(--foreground)" stopOpacity={0} />
+                <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.12} />
+                <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
               </linearGradient>
             </defs>
             <XAxis
@@ -111,7 +111,7 @@ export function ScoreTrendCard({
             <Area
               dataKey="percentage"
               type="monotone"
-              stroke="var(--foreground)"
+              stroke="var(--primary)"
               strokeWidth={2}
               fill="url(#scoreFill)"
               dot={false}
@@ -120,8 +120,10 @@ export function ScoreTrendCard({
           </AreaChart>
         </ChartContainer>
       ) : (
-        <div className="mt-6 flex h-64 items-center justify-center text-sm text-muted-foreground">
-          No attempts in this range.
+        <div className="mt-6 flex h-40 items-center justify-center px-6 text-center text-sm text-muted-foreground">
+          {data.length === 0
+            ? "No attempts in this range."
+            : "One attempt so far — your trend line appears after the next test."}
         </div>
       )}
     </Card>
