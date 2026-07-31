@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FileTextIcon, ClockIcon, AwardIcon, BanIcon } from "lucide-react";
+import { FileTextIcon, ClockIcon, AwardIcon } from "lucide-react";
 import { getExamInstructions } from "@/lib/actions/exam-instructions.action";
 import { getExamAttemptStatus } from "@/lib/actions/start-exam-attempt.action";
 import { StartTestGate } from "@/components/start-test-gate";

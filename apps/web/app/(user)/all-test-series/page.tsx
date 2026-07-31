@@ -46,7 +46,7 @@ export default async function AllTestSeriesPage() {
         )}
       </section>
 
-      <div className="fixed right-4 h-fit top-10 z-30 mx-auto flex w-fit items-center gap-3 rounded-full shadow-[5px_5px_0px_0px_rgba(109,40,217)] bg-card px-4 py-1.5 text-xs text-muted-foreground md:bottom-3 ">
+      <div className="fixed right-4 h-fit top-10 z-30 mx-auto flex w-fit items-center gap-3 rounded-full shadow-secondary bg-card px-4 py-1.5 text-xs text-muted-foreground md:bottom-3 ">
         <span className="flex items-center gap-1.5">
           <span className="size-1.5 rounded-full bg-emerald-500" />
           Live

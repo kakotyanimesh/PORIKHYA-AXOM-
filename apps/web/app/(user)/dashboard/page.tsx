@@ -15,6 +15,7 @@ import {
   OverviewSkeleton,
   RowsSkeleton,
 } from "@/components/dashboard/skeletons";
+import { LinkPending } from "@/components/link-pending";
 
 // press feedback + color hover on a single row. Matches the app's Button press
 // (a subtle 1px nudge, not a big scale). Only transform/bg animate (GPU).
@@ -32,13 +33,25 @@ export default function DashboardPage() {
       </Suspense>
 
       {/* series (shared cache → static shell) + recent attempts (streamed rows) */}
-      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+      <div className="mt-3 grid gap-2 lg:grid-cols-3">
         <RevealItem index={5} className="lg:col-span-1">
           <SeriesCard />
         </RevealItem>
         <RevealItem index={6} className="lg:col-span-2">
           <Card className="h-full p-6">
-            <h2 className="font-heading text-xl">Recent attempts</h2>
+            <div className="flex items-baseline justify-between gap-2">
+              <h2 className="font-heading text-xl">Recent attempts</h2>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="-mr-2 text-muted-foreground"
+                render={<Link href="/all-test-series" />}
+              >
+                View all
+                {/*<ArrowRight className="size-4" />*/}
+                <LinkPending />
+              </Button>
+            </div>
             <Suspense fallback={<RowsSkeleton />}>
               <RecentRows />
             </Suspense>
@@ -62,8 +75,9 @@ async function Overview() {
         <header>
           <h1 className="font-heading text-3xl tracking-tight sm:text-4xl">
             Hello,{" "}
-            <span className="font-dottedFont">{stats.userName.split(" ")[0]}</span>
-            <span className="text-muted-foreground italic">.</span>
+            <span className="text-muted-foreground italic">
+              {stats.userName.split(" ")[0]}.
+            </span>
           </h1>
           <p className="mt-2 max-w-md text-sm text-muted-foreground">
             <span className="font-medium text-foreground">
@@ -80,14 +94,19 @@ async function Overview() {
 
       <div className="my-6 h-px bg-border" />
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-2 lg:grid-cols-3">
         <RevealItem index={1} className="lg:col-span-2">
-          <ScoreTrendCard attempts={stats.attempts} lastAttempt={stats.lastAttempt} />
+          <ScoreTrendCard
+            attempts={stats.attempts}
+            lastAttempt={stats.lastAttempt}
+          />
         </RevealItem>
-        <div className="grid grid-rows-3 gap-4">
+        <div className="grid grid-rows-3 gap-2">
           <RevealItem index={2}>
             <StatCard label="This week" value={String(stats.thisWeekCount)}>
-              <span className="text-sm text-muted-foreground">tests attempted</span>
+              <span className="text-sm text-muted-foreground">
+                tests attempted
+              </span>
             </StatCard>
           </RevealItem>
           <RevealItem index={3}>
@@ -104,11 +123,13 @@ async function Overview() {
                   }
                 >
                   {stats.avgScoreDelta >= 0 ? "↗ +" : "↘ −"}
-                  {Math.abs(Math.round(stats.avgScoreDelta * 10) / 10)} this month
+                  {Math.abs(Math.round(stats.avgScoreDelta * 10) / 10)} this
+                  month
                 </span>
               ) : (
                 <span className="text-sm text-muted-foreground">
-                  across {stats.totalTests} mock{stats.totalTests === 1 ? "" : "s"}
+                  across {stats.totalTests} mock
+                  {stats.totalTests === 1 ? "" : "s"}
                 </span>
               )}
             </StatCard>
@@ -138,7 +159,8 @@ async function SeriesCard() {
           render={<Link href="/all-test-series" />}
         >
           View all
-          <ArrowRight className="size-4" />
+          {/*<ArrowRight className="size-4" />*/}
+          <LinkPending />
         </Button>
       </div>
       <div className="mt-4 space-y-2.5">
@@ -179,13 +201,19 @@ async function RecentRows() {
   const attempts = stats.attempts.slice(0, 4);
 
   if (attempts.length === 0) {
-    return <p className="mt-4 text-sm text-muted-foreground">No attempts yet.</p>;
+    return (
+      <p className="mt-4 text-sm text-muted-foreground">No attempts yet.</p>
+    );
   }
 
   return (
     <div className="mt-4 space-y-2.5">
       {attempts.map((a) => (
-        <Link key={a.id} href={`/exams/${a.examId}/result`} className={rowClass}>
+        <Link
+          key={a.id}
+          href={`/exams/${a.examId}/result`}
+          className={rowClass}
+        >
           <div className="min-w-0">
             <p className="truncate font-medium">{a.examName}</p>
             <p className="mt-0.5 text-xs uppercase tracking-wide text-muted-foreground">
@@ -208,7 +236,7 @@ async function DatePill() {
   const label = await getTodayLabel();
 
   return (
-    <div className="fixed right-6 top-6 z-30 flex w-fit items-center gap-1.5 rounded-full border bg-card/80 px-3.5 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur">
+    <div className="fixed right-6 top-6 z-30 flex w-fit items-center gap-1.5 rounded-full border bg-card/80 px-3.5 py-1.5 text-xs text-muted-foreground shadow-secondary backdrop-blur">
       <span className="size-1.5 rounded-full bg-emerald-500" />
       {label}
     </div>
@@ -225,7 +253,7 @@ function StatCard({
   children: React.ReactNode;
 }) {
   return (
-    <Card className="h-full justify-center gap-1 p-5">
+    <Card className="h-full justify-center gap-1 px-5 py-3">
       <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
         {label}
       </p>
