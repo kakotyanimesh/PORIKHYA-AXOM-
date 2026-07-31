@@ -48,7 +48,9 @@ export default async function SeriesMockTestsPage({
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage className="font-medium">{seriesName}</BreadcrumbPage>
+            <BreadcrumbPage className="font-medium">
+              {seriesName}
+            </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -58,11 +60,14 @@ export default async function SeriesMockTestsPage({
           Mock Tests · {seriesName}
         </p>
         <h1 className="mt-2 font-heading text-3xl tracking-tight sm:text-4xl">
-          {seriesName}. <span className="text-muted-foreground italic">Real pattern, real timer.</span>
+          {seriesName}.{" "}
+          <span className="text-muted-foreground italic">
+            Real pattern, real timer.
+          </span>
         </h1>
         <p className="mt-2 max-w-md text-sm text-muted-foreground">
-          Full-length papers built to match the actual {seriesName} pattern. The first free test in
-          this series is open right away.
+          Full-length papers built to match the actual {seriesName} pattern. The
+          first free test in this series is open right away.
         </p>
       </div>
 
@@ -83,7 +88,10 @@ export default async function SeriesMockTestsPage({
           />
         }
       >
-        <MockTestTableWithAttempts mockTests={mockTests} seriesName={series_name} />
+        <MockTestTableWithAttempts
+          mockTests={mockTests}
+          seriesName={series_name}
+        />
       </Suspense>
     </>
   );
@@ -98,7 +106,9 @@ async function MockTestTableWithAttempts({
   mockTests: MockTest[];
   seriesName: string;
 }) {
-  const completedExamIds = await getCompletedExamIds(mockTests.map((t) => t.id));
+  const completedExamIds = await getCompletedExamIds(
+    mockTests.map((t) => t.id),
+  );
   return (
     <MockTestTable
       mockTests={mockTests}

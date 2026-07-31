@@ -56,11 +56,11 @@ export default async function ExamInstructionsPage({
       value: `${exam.duration_minutes} min`,
     },
     { icon: AwardIcon, label: "Max marks", value: exam.total_questions },
-    {
-      icon: BanIcon,
-      label: "Negative",
-      value: negativeMarks > 0 ? `-${negativeMarks}` : "None",
-    },
+    // {
+    //   icon: BanIcon,
+    //   label: "Negative",
+    //   value: negativeMarks > 0 ? `-${negativeMarks}` : "None",
+    // },
   ];
 
   return (
@@ -110,7 +110,7 @@ export default async function ExamInstructionsPage({
         ))}
       </div>
 
-      <div className="mt-8 grid gap-6 md:grid-cols-[1fr_320px]">
+      <div className="mt-4 grid gap-6 md:grid-cols-[1fr_320px]">
         <section>
           <h2 className="font-heading text-lg">General rules</h2>
           <ol className="mt-4 space-y-4">
@@ -125,7 +125,7 @@ export default async function ExamInstructionsPage({
           </ol>
         </section>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
           <section className="rounded-2xl border p-6">
             <h2 className="font-heading text-lg">Marking scheme</h2>
             <dl className="mt-4 divide-y">
