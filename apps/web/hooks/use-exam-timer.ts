@@ -16,7 +16,9 @@ export function useExamTimer(attemptKey: string, durationMinutes: number, onExpi
   });
   const [isPaused, setIsPaused] = useState(false);
   const onExpireRef = useRef(onExpire);
-  onExpireRef.current = onExpire;
+  useEffect(() => {
+    onExpireRef.current = onExpire;
+  });
 
   useEffect(() => {
     window.localStorage.setItem(storageKey(attemptKey), String(remainingSeconds));

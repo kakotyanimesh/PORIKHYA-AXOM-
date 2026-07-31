@@ -13,6 +13,7 @@ export default function ExamResultPage({
   params: Promise<{ exam_id: string }>;
 }) {
   return (
+    // we need to add fallback ui here 
     <Suspense>
       <ExamResultContent params={params} />
     </Suspense>
@@ -24,8 +25,7 @@ async function ExamResultContent({
 }: {
   params: Promise<{ exam_id: string }>;
 }) {
-  const { exam_id } = await params;
-  const user = await getCurrentUser();
+  const [{ exam_id }, user] = await Promise.all([params, getCurrentUser()]);
 
   const [attempt, exam] = await Promise.all([
     prisma.examAttempt.findUnique({

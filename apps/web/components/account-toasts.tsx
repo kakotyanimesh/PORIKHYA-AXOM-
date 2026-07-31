@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 const TOAST_PARAMS = [
@@ -20,7 +20,6 @@ const MESSAGES: Record<string, string> = {
 export function AccountToasts() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const router = useRouter();
 
   useEffect(() => {
     let fired = false;
@@ -30,7 +29,9 @@ export function AccountToasts() {
       fired = true;
       toast[tone](MESSAGES[key] ?? value);
     }
-    if (fired) router.replace(pathname);
+    // strip the one-shot query params without a client navigation (no page
+    // flash, no re-fetch) — we never wanted to route, only clean the URL
+    if (fired) window.history.replaceState(null, "", pathname);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 

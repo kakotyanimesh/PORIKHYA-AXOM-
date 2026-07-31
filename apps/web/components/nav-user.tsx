@@ -18,7 +18,8 @@ import {
 } from "@repo/ui/components/sidebar";
 import { Skeleton } from "@repo/ui/components/skeleton";
 import { ChevronsUpDownIcon } from "lucide-react";
-import { AccountMenuContent, accountInitials, type AccountUser } from "./account-menu";
+import { AccountMenuContent, type AccountUser } from "./account-menu";
+import { accountInitials } from "./account-initials";
 
 export function NavUserSkeleton() {
   return (

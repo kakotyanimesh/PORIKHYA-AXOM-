@@ -1,5 +1,6 @@
 "use server";
 
+import { updateTag } from "next/cache";
 import { prisma, type Prisma } from "@repo/db";
 import { getCurrentUser } from "@/lib/utils/current-user";
 import {
@@ -181,6 +182,10 @@ export async function submitExamAttempt(
     where: { user_id_exam_id: { user_id: user.id, exam_id: parsed.exam_id } },
     data: { ...result, completed_at: new Date() },
   });
+
+  // new attempt changes the graph, stats and recent-attempts — updateTag forces
+  // an immediate refresh (read-your-writes) so the dashboard is fresh next load.
+  updateTag(`dashboard:${user.id}`);
 
   return result;
 }
