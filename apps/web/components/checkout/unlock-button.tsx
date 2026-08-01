@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { LockIcon, FileTextIcon, LayersIcon } from "lucide-react";
+import { LockIcon, FileTextIcon, LayersIcon, Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@repo/ui/components/button";
 import {
@@ -34,7 +34,13 @@ export function UnlockButton({
 
   function buyThisTest() {
     startTransition(async () => {
-      const order = await createExamOrder({ exam_id: examId });
+      let order;
+      try {
+        order = await createExamOrder({ exam_id: examId });
+      } catch {
+        toast.error("Couldn't start checkout. Check your connection and retry.");
+        return;
+      }
       if ("error" in order) {
         toast.error(
           order.error === "already_owned"
@@ -43,8 +49,11 @@ export function UnlockButton({
         );
         return;
       }
-      setOpen(false);
-      await openCheckout(order);
+      await openCheckout(order, {
+        // land straight on this test's instruction page once unlocked
+        onSuccess: () => router.push(`/all-test-series/${seriesName}/${examId}`),
+        onSettled: () => setOpen(false),
+      });
     });
   }
 
@@ -66,7 +75,14 @@ export function UnlockButton({
         Unlock
       </Button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog
+        open={open}
+        onOpenChange={(next) => {
+          // don't let an outside-click dismiss the modal mid-purchase
+          if (pending && !next) return;
+          setOpen(next);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Unlock this test</DialogTitle>
@@ -82,9 +98,15 @@ export function UnlockButton({
               onClick={buyThisTest}
               className="flex items-center gap-3 rounded-xl border p-4 text-left transition-colors hover:bg-muted disabled:opacity-60"
             >
-              <FileTextIcon className="size-5 shrink-0 text-muted-foreground" />
+              {pending ? (
+                <Loader2Icon className="size-5 shrink-0 animate-spin text-muted-foreground" />
+              ) : (
+                <FileTextIcon className="size-5 shrink-0 text-muted-foreground" />
+              )}
               <span className="flex-1">
-                <span className="block font-medium">This test only</span>
+                <span className="block font-medium">
+                  {pending ? "Starting checkout…" : "This test only"}
+                </span>
                 <span className="block text-sm text-muted-foreground">
                   {examName}
                 </span>

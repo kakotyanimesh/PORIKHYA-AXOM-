@@ -195,6 +195,10 @@ model Payment {
   exam_purchase_id    String?
   amount              Decimal
   currency            String        @default("INR")
+  // what this payment unlocks, written at order creation (server-controlled, so
+  // tamper-proof). grant reads these from the DB — no Razorpay API call needed.
+  kind                String? // "exam" | "plan"
+  target_id           String? // exam_id when kind=exam, plan_id when kind=plan
   razorpay_order_id   String
   razorpay_payment_id String?
   razorpay_signature  String?

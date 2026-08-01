@@ -56,6 +56,8 @@ export async function createExamOrder(
       user_id: user.id,
       amount: SINGLE_TEST_PRICE_INR,
       currency: "INR",
+      kind: "exam",
+      target_id: exam_id,
       razorpay_order_id: order.id,
       status: "PENDING",
     },
@@ -104,6 +106,8 @@ export async function createPlanOrder(
       user_id: user.id,
       amount: plan.price,
       currency: "INR",
+      kind: "plan",
+      target_id: plan_id,
       razorpay_order_id: order.id,
       status: "PENDING",
     },
@@ -133,11 +137,22 @@ export async function verifyPayment(
     return { ok: false, error: "invalid_signature" };
   }
 
-  const result = await grantForOrder(
-    razorpay_order_id,
-    razorpay_payment_id,
-    razorpay_signature,
-  );
-  if (result.userId) updateTag(`subscription:${result.userId}`);
-  return { ok: true };
+  // Never throw to the client handler — a thrown Server Action shows the user
+  // nothing. On a grant failure (e.g. DB briefly unreachable) return an error so
+  // the UI can react; the webhook backstop will still grant the same order later.
+  try {
+    const result = await grantForOrder(
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+    );
+    if (!result.granted && result.error) {
+      return { ok: false, error: result.error };
+    }
+    if (result.userId) updateTag(`subscription:${result.userId}`);
+    return { ok: true };
+  } catch (err) {
+    console.error("verifyPayment grant failed", { razorpay_order_id, err });
+    return { ok: false, error: "grant_failed" };
+  }
 }

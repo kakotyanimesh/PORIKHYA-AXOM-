@@ -1,13 +1,14 @@
 import "server-only";
 import { prisma } from "@repo/db";
-import { razorpay } from "@/lib/razorpay";
 
 // The one place access is actually granted. Both entry points funnel here:
 //   1. verifyPayment() — client checkout-success handler (signature already checked)
 //   2. the Razorpay webhook (body HMAC already checked)
-// Intent (what was bought) is read from the Razorpay ORDER notes, not the client
-// — the client cannot alter order notes, so this is tamper-proof. Idempotent: the
-// PENDING→SUCCESS flip is an atomic claim, so a double delivery grants once.
+// Intent (user + what was bought) lives on the Payment row we wrote at order
+// creation — server-controlled, so tamper-proof, AND no Razorpay API call at
+// grant time (a completed payment must not fail just because Razorpay's API is
+// briefly unreachable). Idempotent: the PENDING→SUCCESS flip is an atomic claim,
+// so a double delivery grants once.
 
 export type GrantResult = { granted: boolean; userId?: string; error?: string };
 
@@ -19,16 +20,12 @@ export async function grantForOrder(
   paymentId: string,
   signature?: string,
 ): Promise<GrantResult> {
-  // authoritative intent from the order we created server-side
-  const order = await razorpay.orders.fetch(orderId);
-  const notes = (order.notes ?? {}) as {
-    kind?: string;
-    exam_id?: string;
-    plan_id?: string;
-    user_id?: string;
-  };
-  const userId = notes.user_id;
-  if (!userId) return { granted: false, error: "order_missing_user" };
+  const intent = await prisma.payment.findFirst({
+    where: { razorpay_order_id: orderId },
+    select: { user_id: true, kind: true, target_id: true },
+  });
+  if (!intent) return { granted: false, error: "unknown_order" };
+  const userId = intent.user_id;
 
   return prisma.$transaction(async (tx) => {
     // atomic claim — only the first caller to move this row out of PENDING wins.
@@ -40,17 +37,17 @@ export async function grantForOrder(
         ...(signature ? { razorpay_signature: signature } : {}),
       },
     });
-    if (claim.count === 0) return { granted: false, userId }; // already processed / unknown
+    if (claim.count === 0) return { granted: false, userId }; // already processed
 
     const payment = await tx.payment.findFirstOrThrow({
       where: { razorpay_order_id: orderId },
       select: { id: true },
     });
 
-    if (notes.kind === "exam" && notes.exam_id) {
+    if (intent.kind === "exam" && intent.target_id) {
       const purchase = await tx.examPurchase.upsert({
-        where: { user_id_exam_id: { user_id: userId, exam_id: notes.exam_id } },
-        create: { user_id: userId, exam_id: notes.exam_id },
+        where: { user_id_exam_id: { user_id: userId, exam_id: intent.target_id } },
+        create: { user_id: userId, exam_id: intent.target_id },
         update: {},
         select: { id: true },
       });
@@ -61,15 +58,15 @@ export async function grantForOrder(
       return { granted: true, userId };
     }
 
-    if (notes.kind === "plan" && notes.plan_id) {
+    if (intent.kind === "plan" && intent.target_id) {
       const plan = await tx.plan.findUniqueOrThrow({
-        where: { id: notes.plan_id },
+        where: { id: intent.target_id },
         select: { duration_days: true, category_grants: true },
       });
       const sub = await tx.subscription.create({
         data: {
           user_id: userId,
-          plan_id: notes.plan_id,
+          plan_id: intent.target_id,
           expires_at: daysFromNow(plan.duration_days),
         },
         select: { id: true },

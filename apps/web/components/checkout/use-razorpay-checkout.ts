@@ -19,6 +19,14 @@ declare global {
   }
 }
 
+type CheckoutOptions = {
+  // runs after the payment is verified and access is granted. Default: refresh.
+  onSuccess?: () => void;
+  // runs when the Razorpay modal is dismissed without completing (or on failure)
+  // so callers can clear their loading state.
+  onSettled?: () => void;
+};
+
 const CHECKOUT_SRC = "https://checkout.razorpay.com/v1/checkout.js";
 
 function loadCheckoutScript(): Promise<boolean> {
@@ -38,10 +46,11 @@ export function useRazorpayCheckout() {
   const router = useRouter();
 
   return useCallback(
-    async (order: OrderResult) => {
+    async (order: OrderResult, opts?: CheckoutOptions) => {
       const loaded = await loadCheckoutScript();
       if (!loaded || !window.Razorpay) {
         toast.error("Couldn't load payment. Check your connection and retry.");
+        opts?.onSettled?.();
         return;
       }
 
@@ -53,17 +62,29 @@ export function useRazorpayCheckout() {
         name: "porikhyaaxom",
         description: order.label,
         handler: async (resp: RazorpayHandlerResponse) => {
+          const verifying = toast.loading("Verifying payment…");
           const res = await verifyPayment({
             razorpay_order_id: resp.razorpay_order_id,
             razorpay_payment_id: resp.razorpay_payment_id,
             razorpay_signature: resp.razorpay_signature,
           });
+          toast.dismiss(verifying);
           if (res.ok) {
             toast.success("Payment successful — access unlocked.");
-            router.refresh();
+            if (opts?.onSuccess) opts.onSuccess();
+            else router.refresh();
           } else {
-            toast.error("Payment verification failed. Contact support if charged.");
+            // payment likely went through but grant didn't — the webhook backstop
+            // will reconcile. Tell the user not to pay again.
+            toast.error(
+              "Payment received but unlocking is delayed. It'll appear shortly — don't pay again.",
+            );
           }
+          opts?.onSettled?.();
+        },
+        modal: {
+          // user closed the Razorpay modal without paying
+          ondismiss: () => opts?.onSettled?.(),
         },
       });
       rzp.open();
