@@ -1,8 +1,8 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CheckIcon } from "lucide-react";
 import { getSeriesPackPlans } from "@/lib/actions/all-test-series.action";
-import { BuyPlanButton } from "@/components/checkout/buy-plan-button";
+import { PackPlanCard } from "@/components/subscriptions/pack-plan-card";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -24,6 +24,25 @@ export default async function SeriesPackPage({
   if (!pack || pack.plans.length === 0) {
     notFound();
   }
+
+  // longest-duration plan is the best value — highlight it and show how much
+  // per-day it saves against the shortest.
+  const longest = pack.plans.reduce((a, b) =>
+    b.durationDays > a.durationDays ? b : a,
+  );
+  const shortest = pack.plans.reduce((a, b) =>
+    b.durationDays < a.durationDays ? b : a,
+  );
+  const savingsPct =
+    shortest.durationDays > 0 && longest.durationDays > 0
+      ? Math.round(
+          (1 -
+            longest.price /
+              longest.durationDays /
+              (shortest.price / shortest.durationDays)) *
+            100,
+        )
+      : 0;
 
   return (
     <>
@@ -63,34 +82,25 @@ export default async function SeriesPackPage({
       </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
-        {pack.plans.map((plan) => (
+        {pack.plans.map((plan, index) => (
           <div
             key={plan.id}
-            className="flex flex-col rounded-2xl border p-6"
+            className="content-enter"
+            style={{ "--enter-index": index } as CSSProperties}
           >
-            <div className="font-heading text-lg">{plan.name}</div>
-            <div className="mt-2 flex items-baseline gap-1">
-              <span className="text-3xl font-semibold">₹{plan.price}</span>
-              <span className="text-sm text-muted-foreground">
-                / {plan.durationDays} days
-              </span>
-            </div>
-            <ul className="mt-4 flex-1 space-y-2 text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <CheckIcon className="size-4 text-primary" />
-                Every test in {seriesName}
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckIcon className="size-4 text-primary" />
-                Valid for {plan.durationDays} days
-              </li>
-            </ul>
-            <div className="mt-6">
-              <BuyPlanButton planId={plan.id}>Buy for ₹{plan.price}</BuyPlanButton>
-            </div>
+            <PackPlanCard
+              plan={plan}
+              seriesName={seriesName}
+              highlighted={plan.id === longest.id && pack.plans.length > 1}
+              savingsPct={savingsPct}
+            />
           </div>
         ))}
       </div>
+
+      <p className="mt-8 text-center text-xs text-muted-foreground">
+        Secure payments · Access starts instantly · Progress never expires
+      </p>
     </>
   );
 }

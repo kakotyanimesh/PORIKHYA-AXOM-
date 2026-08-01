@@ -11,6 +11,7 @@ import { DashboardReveal, RevealItem } from "@/components/dashboard/reveal";
 import { ActiveSubscriptionCard } from "@/components/subscriptions/active-subscription-card";
 import { SuperBundleCard } from "@/components/subscriptions/super-bundle-card";
 import { CategoryPlanCard } from "@/components/subscriptions/category-plan-card";
+import { NoSubscription } from "@/components/subscriptions/no-subscription";
 
 export default function MySubscriptionsPage() {
   return (
@@ -47,18 +48,37 @@ async function SubscriptionState() {
   const unlockGroups = catalog.categories.filter(
     (g) => !ownedCategories.has(g.category),
   );
-  const showSuper = catalog.superPlan != null && !ownsSuper;
+  const showSuper = hasActive && catalog.superPlan != null && !ownsSuper;
+
+  // No active plan → a clean empty state, not the plan grid.
+  if (!hasActive) {
+    return (
+      <>
+        <RevealItem index={0}>
+          <header className="text-center">
+            <h1 className="font-heading text-4xl tracking-tight sm:text-5xl">
+              My subscription
+            </h1>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+              Your plans and validity windows live here once you unlock one.
+            </p>
+          </header>
+        </RevealItem>
+        <RevealItem index={1} className="mx-auto mt-8 block max-w-lg">
+          <NoSubscription />
+        </RevealItem>
+      </>
+    );
+  }
 
   return (
     <>
       <RevealItem index={0}>
         <header className="text-center">
-          {hasActive && (
-            <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground">
-              <span className="size-1.5 rounded-full bg-emerald-500" />
-              Your active plan
-            </span>
-          )}
+          <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground">
+            <span className="size-1.5 rounded-full bg-emerald-500" />
+            Your active plan
+          </span>
           <h1 className="mt-3 font-heading text-4xl tracking-tight sm:text-5xl">
             My subscription
           </h1>
@@ -69,34 +89,20 @@ async function SubscriptionState() {
       </RevealItem>
 
       <div className="mt-8">
-        {hasActive ? (
-          <div
-            className={
-              showSuper ? "grid gap-5 lg:grid-cols-5" : "grid gap-5"
-            }
-          >
-            <div
-              className={`space-y-5 ${showSuper ? "lg:col-span-3" : ""}`}
-            >
-              {activeSubs.map((sub, i) => (
-                <RevealItem key={sub.id} index={1 + i}>
-                  <ActiveSubscriptionCard sub={sub} />
-                </RevealItem>
-              ))}
-            </div>
-            {showSuper && (
-              <RevealItem index={1} className="lg:col-span-2">
-                <SuperBundleCard plan={catalog.superPlan!} />
+        <div className={showSuper ? "grid gap-5 lg:grid-cols-5" : "grid gap-5"}>
+          <div className={`space-y-5 ${showSuper ? "lg:col-span-3" : ""}`}>
+            {activeSubs.map((sub, i) => (
+              <RevealItem key={sub.id} index={1 + i}>
+                <ActiveSubscriptionCard sub={sub} />
               </RevealItem>
-            )}
+            ))}
           </div>
-        ) : (
-          showSuper && (
-            <RevealItem index={1} className="mx-auto block max-w-md">
+          {showSuper && (
+            <RevealItem index={1} className="lg:col-span-2">
               <SuperBundleCard plan={catalog.superPlan!} />
             </RevealItem>
-          )
-        )}
+          )}
+        </div>
       </div>
 
       {unlockGroups.length > 0 && (
@@ -105,10 +111,10 @@ async function SubscriptionState() {
             <div className="flex items-end justify-between gap-4">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {hasActive ? "Add more" : "Plans"}
+                  Add more
                 </p>
                 <h2 className="mt-1 font-heading text-2xl">
-                  {hasActive ? "Unlock other exams" : "Choose a plan"}
+                  Unlock other exams
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Add a category plan and start practising immediately.

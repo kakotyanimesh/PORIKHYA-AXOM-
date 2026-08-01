@@ -111,12 +111,32 @@ export async function getActivePlans(): Promise<PlanOption[]> {
   }));
 }
 
+// Categories that actually have exams in the DB. A plan for a category with no
+// content sells access to nothing, so the catalog below hides it. Cached and
+// invalidated when exams are added/removed (revalidateTag("exam-categories")).
+async function getCategoriesWithExams(): Promise<string[]> {
+  "use cache";
+  cacheTag("exam-categories");
+  cacheLife({ stale: 300, revalidate: 60 * 60 * 15, expire: 60 * 60 * 24 });
+
+  const rows = await prisma.exam.findMany({
+    where: { is_active: true },
+    distinct: ["category"],
+    select: { category: true },
+  });
+  return rows.map((r) => r.category);
+}
+
 // Reshape the flat plan list for the subscriptions UI: the multi-category
 // bundle split out as `superPlan`, single-category plans grouped so each
-// category renders one card with a duration toggle. Pure transform over the
-// cached getActivePlans — no extra query.
+// category renders one card with a duration toggle. Categories with no exams
+// are dropped — never sell access to empty content.
 export async function getPlanCatalog(): Promise<PlanCatalog> {
-  const plans = await getActivePlans();
+  const [plans, liveCategories] = await Promise.all([
+    getActivePlans(),
+    getCategoriesWithExams(),
+  ]);
+  const live = new Set(liveCategories);
 
   let superPlan: PlanOption | null = null;
   const byCategory = new Map<string, PlanDuration[]>();
@@ -127,6 +147,7 @@ export async function getPlanCatalog(): Promise<PlanCatalog> {
       continue;
     }
     const category = p.categoryGrants[0]!;
+    if (!live.has(category)) continue; // no exams in this category — skip
     const durations = byCategory.get(category) ?? [];
     durations.push({
       planId: p.id,
@@ -141,10 +162,13 @@ export async function getPlanCatalog(): Promise<PlanCatalog> {
       category,
       durations: durations.sort((a, b) => a.durationDays - b.durationDays),
     }))
-    .sort(
-      (a, b) =>
-        orderIndex(a.category) - orderIndex(b.category),
-    );
+    .sort((a, b) => orderIndex(a.category) - orderIndex(b.category));
+
+  // the super bundle is only a real bundle if ≥2 of its categories have content
+  if (superPlan) {
+    const liveGrants = superPlan.categoryGrants.filter((c) => live.has(c));
+    if (liveGrants.length < 2) superPlan = null;
+  }
 
   return { superPlan, categories };
 }
