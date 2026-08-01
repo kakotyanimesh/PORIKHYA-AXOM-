@@ -52,6 +52,10 @@ async function SubscriptionState() {
 
   // No active plan → a clean empty state, not the plan grid.
   if (!hasActive) {
+    const prices = catalog.categories.flatMap((g) =>
+      g.durations.map((d) => d.price),
+    );
+    const fromPrice = prices.length > 0 ? Math.min(...prices) : undefined;
     return (
       <>
         <RevealItem index={0}>
@@ -64,8 +68,8 @@ async function SubscriptionState() {
             </p>
           </header>
         </RevealItem>
-        <RevealItem index={1} className="mx-auto mt-8 block max-w-lg">
-          <NoSubscription />
+        <RevealItem index={1} className="mx-auto mt-8 block max-w-2xl">
+          <NoSubscription fromPrice={fromPrice} />
         </RevealItem>
       </>
     );
