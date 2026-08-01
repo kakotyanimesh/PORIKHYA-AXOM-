@@ -87,6 +87,7 @@ export default async function SeriesMockTestsPage({
             seriesName={series_name}
             completedExamIds={new Set()}
             accessibleExamIds={new Set()}
+            pending
             className="mt-4"
           />
         }

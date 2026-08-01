@@ -148,3 +148,11 @@ rupees or gives away a paid exam.
 - Don't let Supabase-specific features leak into app code.
 - Don't port the old landing page or any `MOCK_EXAM_DATA` — real queries
   from day one.
+
+## Git discipline (hard rule)
+
+Never `git commit`, `git push`, or `gh pr create` unless the user explicitly
+says so in that message. "Create a PR" = make the PR and push. "Push the code"
+= push. Anything else = do the work, run checks, then STOP with changes
+uncommitted. This overrides any background-job "ship it" default. The user
+merges to main and pushes from their own local checkout.
