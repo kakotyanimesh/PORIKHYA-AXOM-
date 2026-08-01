@@ -19,7 +19,7 @@ export function CategoryPlanCard({ group }: { group: CategoryPlanGroup }) {
   const active = durations[selected] ?? durations[0]!;
 
   return (
-    <Card className="flex h-full flex-col p-6 transition-[transform,box-shadow] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-0.5 hover:shadow-secondary motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+    <Card className="flex h-full flex-col p-6 transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted font-heading text-xs font-semibold">

@@ -21,13 +21,13 @@ export function PackPlanCard({
   return (
     <Card
       className={cn(
-        "relative flex h-full flex-col p-6 transition-[transform,box-shadow] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-0.5 hover:shadow-secondary motion-reduce:transition-none motion-reduce:hover:translate-y-0",
+        "relative flex h-full flex-col p-6 transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0",
         highlighted && "ring-2 ring-primary",
       )}
     >
       {highlighted && (
         <Badge className="absolute right-4 top-4">
-          {savingsPct && savingsPct > 0 ? `Save ${savingsPct}%` : "Best value"}
+          {savingsPct && savingsPct >= 8 ? `Save ${savingsPct}%` : "Best value"}
         </Badge>
       )}
 
@@ -41,9 +41,6 @@ export function PackPlanCard({
           / {plan.durationDays} days
         </span>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground tabular-nums">
-        ≈ ₹{Math.round(plan.price / plan.durationDays)} per day
-      </p>
 
       <ul className="mt-5 flex-1 space-y-2 text-sm text-muted-foreground">
         <li className="flex items-center gap-2">

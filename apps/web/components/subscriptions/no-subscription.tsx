@@ -1,31 +1,45 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Card } from "@repo/ui/components/card";
 import { Button } from "@repo/ui/components/button";
 import { LinkPending } from "@/components/link-pending";
 
-// Shown when the user holds no active plan. Not a dead end — points them
-// straight at the test series where they can unlock what they need.
-export function NoSubscription() {
+const PERKS = [
+  "Every mock in the category",
+  "Detailed solutions",
+  "Score & weak-topic analytics",
+];
+
+// Shown when the user holds no active plan. Editorial, not a centered-icon
+// placeholder — reads like the rest of the app and points straight at the
+// series where a plan gets unlocked.
+export function NoSubscription({ fromPrice }: { fromPrice?: number }) {
   return (
-    <Card className="relative flex flex-col items-center overflow-hidden p-10 text-center">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-20 left-1/2 size-56 -translate-x-1/2 rounded-full bg-primary/10 blur-2xl"
-      />
-      <div className="flex size-14 items-center justify-center rounded-2xl bg-muted">
-        <Sparkles className="size-6 text-muted-foreground" />
-      </div>
-      <h2 className="mt-5 font-heading text-2xl tracking-tight">
-        No active subscription
-      </h2>
-      <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-        You haven&apos;t unlocked a plan yet. Browse the test series and unlock a
-        category to start practising — access begins the moment you pay.
+    <Card className="p-8 sm:p-10">
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        Get started
       </p>
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+      <h2 className="mt-3 font-heading text-3xl tracking-tight sm:text-4xl">
+        No plan yet.{" "}
+        <span className="text-muted-foreground italic">Let&apos;s fix that.</span>
+      </h2>
+      <p className="mt-3 max-w-md text-sm text-muted-foreground">
+        Unlock a category and every mock in it opens at once — timed,
+        negative-marked, with solutions and analytics.
+        {fromPrice ? ` Plans start at ₹${fromPrice}.` : ""}
+      </p>
+
+      <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+        {PERKS.map((p) => (
+          <li key={p} className="flex items-center gap-2 text-muted-foreground">
+            <span className="size-1.5 rounded-full bg-primary" />
+            {p}
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-7 flex flex-wrap items-center gap-2">
         <Button render={<Link href="/all-test-series" />}>
-          <BookOpen className="size-4" />
           Browse test series
           <ArrowRight className="size-4" />
           <LinkPending />
