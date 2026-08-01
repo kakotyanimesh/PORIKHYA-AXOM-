@@ -25,6 +25,25 @@ export type PlanOption = {
   categoryGrants: string[];
 };
 
+// one buyable duration of a category plan (e.g. ₹499 / 365d)
+export type PlanDuration = {
+  planId: string;
+  price: number;
+  durationDays: number;
+};
+
+// a category grouped across its durations — one unlock card per group,
+// the card's toggle picks which PlanDuration to buy
+export type CategoryPlanGroup = {
+  category: string; // ExamCategory value
+  durations: PlanDuration[]; // sorted shortest → longest
+};
+
+export type PlanCatalog = {
+  superPlan: PlanOption | null; // the multi-category bundle, shown on its own
+  categories: CategoryPlanGroup[];
+};
+
 const subscriptionSelect = {
   id: true,
   started_at: true,
@@ -90,4 +109,48 @@ export async function getActivePlans(): Promise<PlanOption[]> {
     durationDays: p.duration_days,
     categoryGrants: p.category_grants,
   }));
+}
+
+// Reshape the flat plan list for the subscriptions UI: the multi-category
+// bundle split out as `superPlan`, single-category plans grouped so each
+// category renders one card with a duration toggle. Pure transform over the
+// cached getActivePlans — no extra query.
+export async function getPlanCatalog(): Promise<PlanCatalog> {
+  const plans = await getActivePlans();
+
+  let superPlan: PlanOption | null = null;
+  const byCategory = new Map<string, PlanDuration[]>();
+
+  for (const p of plans) {
+    if (p.categoryGrants.length !== 1) {
+      superPlan = p; // multi-category bundle (or a stray no-grant plan)
+      continue;
+    }
+    const category = p.categoryGrants[0]!;
+    const durations = byCategory.get(category) ?? [];
+    durations.push({
+      planId: p.id,
+      price: p.price,
+      durationDays: p.durationDays,
+    });
+    byCategory.set(category, durations);
+  }
+
+  const categories: CategoryPlanGroup[] = [...byCategory.entries()]
+    .map(([category, durations]) => ({
+      category,
+      durations: durations.sort((a, b) => a.durationDays - b.durationDays),
+    }))
+    .sort(
+      (a, b) =>
+        orderIndex(a.category) - orderIndex(b.category),
+    );
+
+  return { superPlan, categories };
+}
+
+const CATEGORY_ORDER = ["ASSAM_TET", "ADRE", "ASSAM_POLICE", "APSC"];
+function orderIndex(c: string): number {
+  const i = CATEGORY_ORDER.indexOf(c);
+  return i === -1 ? CATEGORY_ORDER.length : i;
 }
