@@ -10,7 +10,7 @@ function Logo({
   return (
     <span className="font-dottedFont inline-flex items-center gap-2 tracking-tight">
       {badge && (
-        <span className="flex aspect-square size-8 items-center justify-center rounded-lg bg-chart-4 text-sm font-bold text-primary-foreground">
+        <span className="flex aspect-square size-8 items-center justify-center rounded-lg bg-chart-4 text-sm font-bold text-primary">
           PA
         </span>
       )}

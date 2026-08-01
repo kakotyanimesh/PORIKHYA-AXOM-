@@ -63,7 +63,7 @@ export function AppSidebar({
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<Link href="/dashboard" />}>
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg font-dottedFont text-white  bg-chart-4">
                 <span className="text-sm font-bold">PA</span>
               </div>
               <Logo className="flex-1 truncate text-base" badge={false} />
