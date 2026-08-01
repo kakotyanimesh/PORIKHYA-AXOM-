@@ -86,6 +86,48 @@ export async function getMockTestsBySeriesName(
   return fetchMockTestsBySeriesName(parsed.series_name);
 }
 
+// plans that unlock exactly this series' category (the ₹249/₹499 packs). The
+// all-category super plan (multiple category_grants) is deliberately excluded —
+// it lives on its own upgrade page. Series → category is derived from the exams.
+export type SeriesPackPlan = {
+  id: string;
+  name: string;
+  price: number;
+  durationDays: number;
+};
+
+export async function getSeriesPackPlans(
+  seriesName: string,
+): Promise<{ category: string; seriesName: string; plans: SeriesPackPlan[] } | null> {
+  "use cache";
+  cacheTag(`exam-series:${seriesName}`);
+  cacheTag("plans:all");
+  cacheLife("hours");
+
+  const exam = await prisma.exam.findFirst({
+    where: { is_active: true, series_name: seriesName },
+    select: { category: true },
+  });
+  if (!exam) return null;
+
+  const plans = await prisma.plan.findMany({
+    where: { is_active: true, category_grants: { equals: [exam.category] } },
+    orderBy: { price: "asc" },
+    select: { id: true, name: true, price: true, duration_days: true },
+  });
+
+  return {
+    category: exam.category,
+    seriesName,
+    plans: plans.map((p) => ({
+      id: p.id,
+      name: p.name,
+      price: Number(p.price),
+      durationDays: p.duration_days,
+    })),
+  };
+}
+
 // `new Date()` outside a cache scope blocks the static shell; baking it in
 // here means the label refreshes on the same cadence as the exam data.
 export async function getIndexedDateLabel(): Promise<string> {

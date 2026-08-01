@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { FileTextIcon, LockIcon, ClockIcon, ChartColumnIcon } from "lucide-react";
+import { FileTextIcon, ClockIcon, ChartColumnIcon } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -13,16 +13,19 @@ import { Button } from "@repo/ui/components/button";
 import { cn } from "@repo/ui/lib/utils";
 import type { MockTest } from "@/lib/actions/all-test-series.action";
 import { LinkPending } from "./link-pending";
+import { UnlockButton } from "./checkout/unlock-button";
 
 export function MockTestTable({
   mockTests,
   seriesName,
   completedExamIds,
+  accessibleExamIds,
   className,
 }: {
   mockTests: MockTest[];
   seriesName: string;
   completedExamIds: Set<string>;
+  accessibleExamIds: Set<string>;
   className?: string;
 }) {
   return (
@@ -77,7 +80,7 @@ export function MockTestTable({
                     <ChartColumnIcon />
                     Analyse
                   </Button>
-                ) : test.is_free ? (
+                ) : test.is_free || accessibleExamIds.has(test.id) ? (
                   <Button
                     size="sm"
                     className={"w-22"}
@@ -91,10 +94,11 @@ export function MockTestTable({
                     Start
                   </Button>
                 ) : (
-                  <Button size="sm" type="button" variant="secondary">
-                    <LockIcon />
-                    Unlock
-                  </Button>
+                  <UnlockButton
+                    examId={test.id}
+                    examName={test.name}
+                    seriesName={seriesName}
+                  />
                 )}
               </TableCell>
             </TableRow>

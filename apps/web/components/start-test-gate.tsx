@@ -21,6 +21,12 @@ export function StartTestGate({ examId }: { examId: string }) {
       router.push(`/exams/${examId}/attempt`);
       return;
     }
+    if (result.status === "no_access") {
+      // shouldn't normally reach here — access is gated on the listing — but a
+      // stale page could. Send them back to buy rather than burn nothing.
+      router.push("/all-test-series");
+      return;
+    }
     setAlreadyAttempted({ completed: result.completed });
     setIsStarting(false);
   }

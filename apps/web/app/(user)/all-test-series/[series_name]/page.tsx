@@ -7,6 +7,8 @@ import {
   type MockTest,
 } from "@/lib/actions/all-test-series.action";
 import { getCompletedExamIds } from "@/lib/actions/start-exam-attempt.action";
+import { getCurrentUser } from "@/lib/utils/current-user";
+import { getAccessibleExamIds } from "@/lib/utils/subscription-access";
 import { MockTestTable } from "@/components/mock-test-table";
 import {
   Breadcrumb,
@@ -84,6 +86,7 @@ export default async function SeriesMockTestsPage({
             mockTests={mockTests}
             seriesName={series_name}
             completedExamIds={new Set()}
+            accessibleExamIds={new Set()}
             className="mt-4"
           />
         }
@@ -106,14 +109,18 @@ async function MockTestTableWithAttempts({
   mockTests: MockTest[];
   seriesName: string;
 }) {
-  const completedExamIds = await getCompletedExamIds(
-    mockTests.map((t) => t.id),
-  );
+  const examIds = mockTests.map((t) => t.id);
+  const user = await getCurrentUser();
+  const [completedExamIds, accessibleExamIds] = await Promise.all([
+    getCompletedExamIds(examIds),
+    getAccessibleExamIds(user.id, examIds),
+  ]);
   return (
     <MockTestTable
       mockTests={mockTests}
       seriesName={seriesName}
       completedExamIds={completedExamIds}
+      accessibleExamIds={accessibleExamIds}
       className="mt-4"
     />
   );

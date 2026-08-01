@@ -2,6 +2,7 @@
 
 import { Prisma, prisma } from "@repo/db";
 import { getCurrentUser } from "@/lib/utils/current-user";
+import { hasExamAccess } from "@/lib/utils/subscription-access";
 import {
   startExamAttemptSchema,
   type StartExamAttemptInput,
@@ -9,7 +10,8 @@ import {
 
 export type StartExamAttemptResult =
   | { status: "started" }
-  | { status: "already_attempted"; completed: boolean };
+  | { status: "already_attempted"; completed: boolean }
+  | { status: "no_access" };
 
 // the ExamAttempt row IS the one-attempt-ever lock — created here, at start,
 // never at completion. @@unique([user_id, exam_id]) is what actually enforces
@@ -20,6 +22,12 @@ export async function startExamAttempt(
 ): Promise<StartExamAttemptResult> {
   const parsed = startExamAttemptSchema.parse(input);
   const user = await getCurrentUser();
+
+  // gate BEFORE the lock — a paid exam must not burn its one attempt for a user
+  // who never paid. Same access rule as the listing cards (shared helper).
+  if (!(await hasExamAccess(user.id, parsed.exam_id))) {
+    return { status: "no_access" };
+  }
 
   try {
     await prisma.examAttempt.create({
