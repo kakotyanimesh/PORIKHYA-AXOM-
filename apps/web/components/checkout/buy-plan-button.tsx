@@ -31,7 +31,7 @@ export function BuyPlanButton({
       if ("error" in order) {
         toast.error(
           order.error === "already_subscribed"
-            ? "You already have an active plan."
+            ? "You already have this plan active."
             : "This plan can't be purchased right now.",
         );
         return;

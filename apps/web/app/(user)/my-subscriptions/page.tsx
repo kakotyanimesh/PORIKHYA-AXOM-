@@ -8,7 +8,7 @@ import { Skeleton } from "@repo/ui/components/skeleton";
 import { getCurrentUser } from "@/lib/utils/current-user";
 import {
   getActivePlans,
-  getMySubscription,
+  getMySubscriptions,
   type MySubscription,
   type PlanOption,
 } from "@/lib/actions/my-subscriptions.action";
@@ -50,8 +50,8 @@ export default function MySubscriptionsPage() {
             <span className="text-muted-foreground italic">unlocked.</span>
           </h1>
           <p className="mt-2 max-w-md text-sm text-muted-foreground">
-            One active plan grants every mock in its categories. Buy a single
-            exam any time — it stays yours regardless of your plan.
+            Each plan unlocks every mock in its categories. Stack plans across
+            exams, and buy a single test any time — it stays yours regardless.
           </p>
         </header>
       </RevealItem>
@@ -68,22 +68,43 @@ export default function MySubscriptionsPage() {
 
 async function SubscriptionState() {
   const user = await getCurrentUser();
-  const sub = await getMySubscription(user.id);
+  const subs = await getMySubscriptions(user.id);
 
-  if (!sub) return <PlanArea />;
-  return <ActiveSubscription sub={sub} />;
+  if (subs.length === 0) return <PlanArea />;
+
+  // plans still worth showing: ones the user doesn't already hold un-expired.
+  // Expired plans reappear in the grid so they can be renewed.
+  const now = Date.now();
+  const ownedPlanIds = new Set(
+    subs.filter((s) => s.expiresAt.getTime() > now).map((s) => s.planId),
+  );
+
+  return (
+    <section className="space-y-6">
+      {subs.map((sub, i) => (
+        <RevealItem key={sub.id} index={1 + i}>
+          <ActiveSubscriptionCard sub={sub} />
+        </RevealItem>
+      ))}
+      <Suspense fallback={<PlanGridSkeleton heading="Add another plan" />}>
+        <PlanArea
+          heading="Add another plan"
+          startIndex={subs.length + 1}
+          excludePlanIds={ownedPlanIds}
+        />
+      </Suspense>
+    </section>
+  );
 }
 
-function ActiveSubscription({ sub }: { sub: MySubscription }) {
+function ActiveSubscriptionCard({ sub }: { sub: MySubscription }) {
   const now = new Date();
   const msLeft = sub.expiresAt.getTime() - now.getTime();
   const daysLeft = Math.max(0, Math.ceil(msLeft / (1000 * 60 * 60 * 24)));
   const expired = msLeft <= 0;
 
   return (
-    <section className="space-y-6">
-      <RevealItem index={1}>
-        <Card className="p-6">
+    <Card className="p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
@@ -121,31 +142,28 @@ function ActiveSubscription({ sub }: { sub: MySubscription }) {
               {expired ? "Expired" : "Expires"} {dateFmt.format(sub.expiresAt)}
             </span>
           </div>
-        </Card>
-      </RevealItem>
-
-      {expired ? (
-        <Suspense fallback={<PlanGridSkeleton heading="Renew your plan" />}>
-          <PlanArea heading="Renew your plan" startIndex={2} />
-        </Suspense>
-      ) : null}
-    </section>
+    </Card>
   );
 }
 
 async function PlanArea({
   heading = "Choose a plan",
   startIndex = 1,
+  excludePlanIds,
 }: {
   heading?: string;
   startIndex?: number;
+  excludePlanIds?: Set<string>;
 }) {
-  const plans = await getActivePlans();
+  const allPlans = await getActivePlans();
+  const plans = excludePlanIds
+    ? allPlans.filter((p) => !excludePlanIds.has(p.id))
+    : allPlans;
 
   if (plans.length === 0) {
     return (
       <p className="rounded-2xl border border-dashed p-8 text-center text-muted-foreground">
-        No plans available yet.
+        {excludePlanIds ? "You own every plan. Nice." : "No plans available yet."}
       </p>
     );
   }

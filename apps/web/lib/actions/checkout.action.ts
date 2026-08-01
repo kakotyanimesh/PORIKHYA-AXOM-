@@ -85,14 +85,19 @@ export async function createPlanOrder(
   });
   if (!plan || !plan.is_active) return { error: "not_purchasable" };
 
-  // one active Subscription per user (partial unique index). Refuse to CHARGE
-  // for a plan we could not then grant. ponytail: no upgrade/stacking yet —
-  // add plan-swap here when the super-plan upgrade flow is built.
-  const activeSub = await prisma.subscription.findFirst({
-    where: { user_id: user.id, is_active: true, expires_at: { gt: new Date() } },
+  // Plans stack (per-category, independent) — a user can hold TET and Police at
+  // once. Only refuse the pointless case: re-buying THIS SAME plan while it's
+  // already active (also what the partial unique index enforces at grant time).
+  const sameActive = await prisma.subscription.findFirst({
+    where: {
+      user_id: user.id,
+      plan_id,
+      is_active: true,
+      expires_at: { gt: new Date() },
+    },
     select: { id: true },
   });
-  if (activeSub) return { error: "already_subscribed" };
+  if (sameActive) return { error: "already_subscribed" };
 
   const amountPaise = toPaise(Number(plan.price));
   const order = await razorpay.orders.create({

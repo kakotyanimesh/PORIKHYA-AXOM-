@@ -36,9 +36,11 @@ Two purchase paths, both via Razorpay:
   `ExamPurchase` row (not a Subscription row — must survive independent of
   subscription state).
 - **Plan/bundle, time-boxed** — `Plan` (`category_grants[]`, `duration_days`)
-  → `Subscription` (**one active per user**, enforced by a partial unique
-  index, raw SQL — not a plain `@@unique`) → `SubscriptionExam` rows grant
-  every `Exam` in the bought categories.
+  → `Subscription` (**one active per (user, plan)** — plans are per-category
+  and stack, so a user can hold several active subs at once; enforced by a
+  partial unique index on `(user_id, plan_id)`, raw SQL — not a plain
+  `@@unique`) → `SubscriptionExam` rows grant every `Exam` in the bought
+  categories.
 
 Access to an exam = OR of: `is_free`, OR `ExamPurchase` exists, OR active
 `Subscription` grants it via `SubscriptionExam`. Never assume free by default.

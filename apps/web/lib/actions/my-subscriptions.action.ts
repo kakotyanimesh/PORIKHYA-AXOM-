@@ -7,6 +7,7 @@ import { prisma, type Prisma } from "@repo/db";
 // plain JSON. category_grants values are strings at runtime.
 export type MySubscription = {
   id: string;
+  planId: string;
   planName: string;
   price: number;
   durationDays: number;
@@ -29,29 +30,30 @@ const subscriptionSelect = {
   started_at: true,
   expires_at: true,
   plan: {
-    select: { name: true, price: true, duration_days: true, category_grants: true },
+    select: { id: true, name: true, price: true, duration_days: true, category_grants: true },
   },
   _count: { select: { subscription_exams: true } },
 } satisfies Prisma.SubscriptionSelect;
 
 // Per-user, private cache. Invalidated explicitly when the user subscribes/cancels
-// (revalidateTag(`subscription:${userId}`) in the checkout grant action).
-// One active Subscription per user (partial unique index), so findFirst is safe.
-export async function getMySubscription(
+// (updateTag(`subscription:${userId}`) in the checkout grant action). Plans stack,
+// so a user can have several active subscriptions — return all, newest first.
+export async function getMySubscriptions(
   userId: string,
-): Promise<MySubscription | null> {
+): Promise<MySubscription[]> {
   "use cache: private";
   cacheLife("days");
   cacheTag(`subscription:${userId}`);
 
-  const sub = await prisma.subscription.findFirst({
+  const subs = await prisma.subscription.findMany({
     where: { user_id: userId, is_active: true },
+    orderBy: { started_at: "desc" },
     select: subscriptionSelect,
   });
-  if (!sub) return null;
 
-  return {
+  return subs.map((sub) => ({
     id: sub.id,
+    planId: sub.plan.id,
     planName: sub.plan.name,
     price: Number(sub.plan.price),
     durationDays: sub.plan.duration_days,
@@ -59,7 +61,7 @@ export async function getMySubscription(
     startedAt: sub.started_at,
     expiresAt: sub.expires_at,
     examCount: sub._count.subscription_exams,
-  };
+  }));
 }
 
 // Shared (not per-user) catalogue. Long-lived → lands in the static shell.

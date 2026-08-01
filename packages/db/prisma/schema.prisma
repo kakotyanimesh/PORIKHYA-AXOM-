@@ -134,10 +134,11 @@ model Plan {
   subscriptions Subscription[]
 }
 
-// one active Subscription per user — Postgres treats is_active: false as a
-// duplicable value, so this needs a partial unique index (WHERE is_active =
-// true) via raw SQL migration, not a plain @@unique. Add that migration by
-// hand — Prisma DSL can't express it.
+// one active Subscription per (user, plan) — plans are per-category and stack, so
+// a user can hold several active subs (TET + Police). Postgres treats
+// is_active: false as a duplicable value, so this is a partial unique index on
+// (user_id, plan_id) WHERE is_active = true, via raw SQL migration, not a plain
+// @@unique. Add that migration by hand — Prisma DSL can't express it.
 
 model Subscription {
   id         String   @id @default(cuid())
