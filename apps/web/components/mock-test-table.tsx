@@ -80,6 +80,7 @@ export function MockTestTable({
                 ) : completedExamIds.has(test.id) ? (
                   <Button
                     size="sm"
+                    variant={"outline"}
                     className="w-22"
                     render={<Link href={`/exams/${test.id}/result`} />}
                   >
