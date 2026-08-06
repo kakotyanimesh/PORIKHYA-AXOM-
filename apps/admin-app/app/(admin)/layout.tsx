@@ -1,7 +1,6 @@
 import { Suspense } from "react";
-import Link from "next/link";
+import { AppSidebar, AppSidebarSkeleton } from "@/components/app-sidebar";
 import { requireAdmin } from "@/lib/utils/require-admin";
-import { Skeleton } from "@repo/ui/components/skeleton";
 import {
   SidebarInset,
   SidebarProvider,
@@ -17,21 +16,25 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-svh flex-col">
-      <header className="flex items-center justify-between border-b px-6 py-3">
-        <Link href="/" className="font-heading text-lg font-medium">
-          porikhyaaxom admin
-        </Link>
-        <Suspense fallback={null}>
-          <AdminEmail />
-        </Suspense>
-      </header>
-      <main className="flex-1 p-6">
-        <Suspense fallback={<p className="text-sm text-muted-foreground">Loading…</p>}>
-          <AdminGate>{children}</AdminGate>
-        </Suspense>
-      </main>
-    </div>
+    <SidebarProvider>
+      <Suspense fallback={<AppSidebarSkeleton />}>
+        <AppSidebar />
+      </Suspense>
+      <SidebarInset>
+        <header className="flex h-14 shrink-0 items-center px-4">
+          <SidebarTrigger />
+        </header>
+        <div className="mx-auto w-full max-w-6xl flex-1 px-4 pb-10">
+          <Suspense
+            fallback={
+              <p className="text-sm text-muted-foreground">Loading…</p>
+            }
+          >
+            <AdminGate>{children}</AdminGate>
+          </Suspense>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
 
@@ -39,9 +42,4 @@ export default function AdminLayout({
 async function AdminGate({ children }: { children: React.ReactNode }) {
   await requireAdmin();
   return <>{children}</>;
-}
-
-async function AdminEmail() {
-  const admin = await requireAdmin(); // cache()'d — shares the read with AdminGate
-  return <span className="text-sm text-muted-foreground">{admin.email}</span>;
 }
