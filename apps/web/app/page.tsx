@@ -126,24 +126,36 @@ function Hero() {
       />
 
       <div className="relative mx-auto flex max-w-3xl flex-col items-center px-6 pb-24 pt-40 text-center">
-        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
+        <span
+          style={{ "--enter-index": 0 } as React.CSSProperties}
+          className="content-enter inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur"
+        >
           <span className="size-1.5 animate-pulse rounded-full bg-emerald-500" />
           Assam TET 2026 series is live
         </span>
 
-        <h1 className="mt-7 font-heading text-5xl font-medium leading-[1.05] tracking-tight sm:text-6xl md:text-7xl">
+        <h1
+          style={{ "--enter-index": 1 } as React.CSSProperties}
+          className="content-enter mt-7 font-heading text-5xl font-medium leading-[1.05] tracking-tight sm:text-6xl md:text-7xl"
+        >
           Ace your{" "}
           <span className="text-primary italic underline decoration-primary/30 decoration-2 underline-offset-8">
             Assam
           </span>{" "}
           competitive exams
         </h1>
-        <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+        <p
+          style={{ "--enter-index": 2 } as React.CSSProperties}
+          className="content-enter mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg"
+        >
           Full-length mocks, sectional drills, previous-year papers and honest
           analytics — built for Assam TET, ADRE and Assam Police.
         </p>
 
-        <div className="mt-9 flex flex-col items-center gap-3 sm:flex-row">
+        <div
+          style={{ "--enter-index": 3 } as React.CSSProperties}
+          className="content-enter mt-9 flex flex-col items-center gap-3 sm:flex-row"
+        >
           <Button size="lg" render={<Link href="/signup" />}>
             Start free — no card
             <ArrowRight data-icon="inline-end" />
@@ -154,7 +166,10 @@ function Hero() {
           </Button>
         </div>
 
-        <p className="mt-5 text-xs text-muted-foreground">
+        <p
+          style={{ "--enter-index": 4 } as React.CSSProperties}
+          className="content-enter mt-5 text-xs text-muted-foreground"
+        >
           First mock in every series is free · {TICKER.length}+ prep tools ·
           Assam-only content
         </p>
@@ -235,7 +250,10 @@ function DashboardCard() {
     { name: "Assam Police SI", meta: "Mock 02 · Locked", free: false },
   ];
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-b from-muted/40 to-background p-7 lg:col-span-3">
+    <div
+      style={{ "--reveal-i": 0 } as React.CSSProperties}
+      className="reveal relative overflow-hidden rounded-3xl border border-border bg-gradient-to-b from-muted/40 to-background p-7 lg:col-span-3"
+    >
       <div className="flex items-center justify-between">
         <MockChip label="Test series" />
         <ArrowUpRight className="size-4 text-muted-foreground/50" />
@@ -273,7 +291,10 @@ function DashboardCard() {
 
 function AnalysisCard() {
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-border bg-neutral-950 p-7 text-neutral-100 lg:col-span-2">
+    <div
+      style={{ "--reveal-i": 1 } as React.CSSProperties}
+      className="reveal relative overflow-hidden rounded-3xl border border-border bg-neutral-950 p-7 text-neutral-100 lg:col-span-2"
+    >
       <div className="flex items-center justify-between">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-neutral-400">
           <BarChart3 className="size-3" /> Analysis
@@ -302,8 +323,8 @@ function AnalysisCard() {
           {[70, 92, 55, 80, 88, 40, 95].map((h, i) => (
             <div
               key={i}
-              className="flex-1 rounded-sm rounded-t-md bg-primary/70"
-              style={{ height: `${h}%` }}
+              className="bar-rise flex-1 rounded-sm rounded-t-md bg-primary/70"
+              style={{ height: `${h}%`, "--bar-i": i } as React.CSSProperties}
             />
           ))}
         </div>
@@ -334,7 +355,10 @@ function ExamUiCard() {
     unseen: "bg-muted text-muted-foreground border-border",
   };
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-b from-muted/40 to-background p-7 lg:col-span-2">
+    <div
+      style={{ "--reveal-i": 0 } as React.CSSProperties}
+      className="reveal relative overflow-hidden rounded-3xl border border-border bg-gradient-to-b from-muted/40 to-background p-7 lg:col-span-2"
+    >
       <div className="flex items-center justify-between">
         <MockChip label="Live attempt" />
         <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background px-2.5 py-1 font-mono text-xs tabular-nums">
@@ -392,7 +416,10 @@ function MarksCard() {
     },
   ];
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-b from-muted/40 to-background p-7 lg:col-span-3">
+    <div
+      style={{ "--reveal-i": 1 } as React.CSSProperties}
+      className="reveal relative overflow-hidden rounded-3xl border border-border bg-gradient-to-b from-muted/40 to-background p-7 lg:col-span-3"
+    >
       <div className="flex items-center justify-between">
         <MockChip label="Scorecard" />
         <ArrowUpRight className="size-4 text-muted-foreground/50" />
@@ -592,7 +619,7 @@ function Faq() {
           {FAQ.map((item, i) => (
             <details
               key={item.q}
-              className="group rounded-2xl border border-border bg-background px-5 py-4 open:bg-muted/30 [&_summary::-webkit-details-marker]:hidden"
+              className="faq-item group rounded-2xl border border-border bg-background px-5 py-4 open:bg-muted/30 [&_summary::-webkit-details-marker]:hidden"
             >
               <summary className="flex cursor-pointer list-none items-center gap-4 text-sm font-medium">
                 <span className="font-mono text-xs text-muted-foreground/60">
