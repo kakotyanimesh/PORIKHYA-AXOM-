@@ -213,3 +213,68 @@
     }
   }
 }
+
+/* Landing scroll-driven reveals + native FAQ expand.
+   Progressive enhancement: @supports guards mean unsupported browsers show the
+   final (visible / snapping) state with no regression. Reduced-motion opts out
+   of the scroll animations entirely (elements stay visible). */
+@keyframes landing-reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landing-bar-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    /* Fade-rise a card as it scrolls into view. Per-card --reveal-i offsets the
+       range start to stagger siblings that enter together. */
+    .reveal {
+      animation: landing-reveal-rise linear both;
+      animation-timeline: view();
+      animation-range: entry calc(var(--reveal-i, 0) * 7%) cover 26%;
+    }
+
+    /* Grow a bar from its baseline as it scrolls in. */
+    .bar-rise {
+      transform-origin: bottom;
+      animation: landing-bar-grow linear both;
+      animation-timeline: view();
+      animation-range: entry calc(var(--bar-i, 0) * 3%) cover 22%;
+    }
+  }
+
+  /* Smoothly animate native <details> open/close height. Chrome 131+. */
+  @supports (interpolate-size: allow-keywords) {
+    :root {
+      interpolate-size: allow-keywords;
+    }
+
+    .faq-item::details-content {
+      block-size: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition:
+        block-size 250ms cubic-bezier(0.23, 1, 0.32, 1),
+        opacity 250ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .faq-item[open]::details-content {
+      block-size: auto;
+      opacity: 1;
+    }
+  }
+}
