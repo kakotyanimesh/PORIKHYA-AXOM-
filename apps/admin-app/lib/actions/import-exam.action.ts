@@ -8,7 +8,7 @@ import {
   type ImportExamInput,
 } from "../validations/import-exam.validation";
 import { questionSchema, type QuestionInput } from "../validations/question.validation";
-import { writeQuestion } from "./question.action";
+import { writeQuestion } from "@/lib/utils/write-question";
 
 export type QuestionIssue = { index: number; label: string; error: string };
 

@@ -1,6 +1,12 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/utils/require-admin";
+import { Skeleton } from "@repo/ui/components/skeleton";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@repo/ui/components/sidebar";
 
 // Sync layout so the shell prerenders. All per-request auth (headers()) lives
 // inside Suspense boundaries below — required by Next 16 cacheComponents, else

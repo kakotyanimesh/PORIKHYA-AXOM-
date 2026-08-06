@@ -11,20 +11,35 @@ import {
   TableCell,
 } from "@repo/ui/components/table";
 
-export default async function ExamsPage() {
-  const exams = await prisma.exam.findMany({
-    orderBy: [{ series_name: "asc" }, { created_at: "desc" }],
-    select: {
-      id: true,
-      name: true,
-      series_name: true,
-      category: true,
-      duration_minutes: true,
-      is_free: true,
-      is_active: true,
-      _count: { select: { questions: true } },
-    },
-  });
+const PAGE_SIZE = 10;
+
+export default async function ExamsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const page = Math.max(1, Number((await searchParams).page) || 1);
+
+  const [exams, total] = await Promise.all([
+    prisma.exam.findMany({
+      orderBy: [{ series_name: "asc" }, { created_at: "desc" }],
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+      select: {
+        id: true,
+        name: true,
+        series_name: true,
+        category: true,
+        duration_minutes: true,
+        is_free: true,
+        is_active: true,
+        _count: { select: { questions: true } },
+      },
+    }),
+    prisma.exam.count(),
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -32,7 +47,7 @@ export default async function ExamsPage() {
         <div>
           <h1 className="font-heading text-2xl font-medium">Exams</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {exams.length} exam{exams.length === 1 ? "" : "s"}
+            {total} exam{total === 1 ? "" : "s"}
           </p>
         </div>
         <Button render={<Link href="/exams/new" />}>New exam</Button>
@@ -81,6 +96,32 @@ export default async function ExamsPage() {
               ))}
             </TableBody>
           </Table>
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Page {page} of {totalPages}
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              render={<Link href={`/exams?page=${page - 1}`} />}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages}
+              render={<Link href={`/exams?page=${page + 1}`} />}
+            >
+              Next
+            </Button>
+          </div>
         </div>
       )}
     </div>

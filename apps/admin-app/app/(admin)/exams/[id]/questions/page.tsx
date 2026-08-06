@@ -4,6 +4,7 @@ import { prisma } from "@repo/db";
 import { Button } from "@repo/ui/components/button";
 import { Badge } from "@repo/ui/components/badge";
 import { DeleteQuestionButton } from "@/components/delete-question-button";
+import { AdminBreadcrumb } from "@/components/admin-breadcrumb";
 
 export default async function QuestionsPage({
   params,
@@ -33,20 +34,22 @@ export default async function QuestionsPage({
 
   return (
     <div className="mx-auto max-w-3xl">
+      <AdminBreadcrumb
+        items={[
+          { label: "Exams", href: "/exams" },
+          { label: exam.name, href: `/exams/${exam.id}/edit` },
+          { label: "Questions" },
+        ]}
+      />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-heading text-2xl font-medium">Questions</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {exam.name} — {exam.questions.length} added
+            {exam.questions.length} added
             {exam.total_questions ? ` / ${exam.total_questions} planned` : ""}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" render={<Link href={`/exams/${exam.id}/edit`} />}>
-            Back to exam
-          </Button>
-          <Button render={<Link href={`/exams/${exam.id}/questions/new`} />}>New question</Button>
-        </div>
+        <Button render={<Link href={`/exams/${exam.id}/questions/new`} />}>New question</Button>
       </div>
 
       {exam.questions.length === 0 ? (

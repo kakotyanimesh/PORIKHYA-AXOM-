@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@repo/db";
 import { QuestionForm, type QuestionFormInitial } from "@/components/question-form";
+import { AdminBreadcrumb } from "@/components/admin-breadcrumb";
 
 export default async function EditQuestionPage({
   params,
@@ -51,8 +52,15 @@ export default async function EditQuestionPage({
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="font-heading text-2xl font-medium">Edit question</h1>
-      <p className="mt-1 mb-6 text-sm text-muted-foreground">{exam.name}</p>
+      <AdminBreadcrumb
+        items={[
+          { label: "Exams", href: "/exams" },
+          { label: exam.name, href: `/exams/${exam.id}/edit` },
+          { label: "Questions", href: `/exams/${exam.id}/questions` },
+          { label: "Edit question" },
+        ]}
+      />
+      <h1 className="mb-6 font-heading text-2xl font-medium">Edit question</h1>
       <QuestionForm examId={exam.id} subsections={exam.subsections} initial={initial} />
     </div>
   );

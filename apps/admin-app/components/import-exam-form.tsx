@@ -92,8 +92,8 @@ export function ImportExamForm() {
           <p className="font-medium text-destructive">Fix these before importing</p>
           {report.errors.length > 0 && (
             <ul className="mt-2 list-inside list-disc space-y-1">
-              {report.errors.map((e, i) => (
-                <li key={i}>{e}</li>
+              {report.errors.map((e) => (
+                <li key={e}>{e}</li>
               ))}
             </ul>
           )}
