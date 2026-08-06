@@ -4,6 +4,7 @@ import { prisma } from "@repo/db";
 import { Button } from "@repo/ui/components/button";
 import { ExamForm, type ExamFormValues } from "@/components/exam-form";
 import { DeleteExamButton } from "@/components/delete-exam-button";
+import { AdminBreadcrumb } from "@/components/admin-breadcrumb";
 import { EXAM_CATEGORIES } from "@/lib/validations/exam.validation";
 
 export default async function EditExamPage({
@@ -34,12 +35,14 @@ export default async function EditExamPage({
 
   return (
     <div className="mx-auto max-w-2xl">
+      <AdminBreadcrumb
+        items={[{ label: "Exams", href: "/exams" }, { label: exam.name }]}
+      />
       <div className="flex items-center justify-between">
         <h1 className="font-heading text-2xl font-medium">Edit exam</h1>
         <DeleteExamButton id={exam.id} name={exam.name} />
       </div>
-      <p className="mt-1 mb-4 text-sm text-muted-foreground">{exam.name}</p>
-      <div className="mb-6 flex gap-2">
+      <div className="mt-4 mb-6 flex gap-2">
         <Button variant="outline" size="sm" render={<Link href={`/exams/${exam.id}/questions`} />}>
           Manage questions
         </Button>

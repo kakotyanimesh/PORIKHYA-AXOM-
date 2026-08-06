@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, type FormEvent } from "react";
+import { useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@repo/ui/components/button";
@@ -32,10 +32,10 @@ export function QuestionBuilder({
 }) {
   const router = useRouter();
   const [staged, setStaged] = useState<Staged[]>([]);
-  const [draft, setDraft] = useState<QuestionDraft>(emptyDraft(startOrder));
+  const [draft, setDraft] = useState<QuestionDraft>(() => emptyDraft(startOrder));
   const [correctIndex, setCorrectIndex] = useState<number>(-1);
   const [editingKey, setEditingKey] = useState<number | null>(null);
-  const [nextKey, setNextKey] = useState(1);
+  const nextKey = useRef(1); // only read/bumped in handlers; ref avoids a re-render
   const [pending, startTransition] = useTransition();
 
   const left = remaining === undefined ? undefined : remaining - staged.length;
@@ -62,8 +62,8 @@ export function QuestionBuilder({
         toast.error("Reached the exam's question limit");
         return;
       }
-      setStaged((prev) => [...prev, { key: nextKey, draft, correctIndex }]);
-      setNextKey((k) => k + 1);
+      setStaged((prev) => [...prev, { key: nextKey.current, draft, correctIndex }]);
+      nextKey.current += 1;
       toast.success("Added to list");
     }
     resetDraft();

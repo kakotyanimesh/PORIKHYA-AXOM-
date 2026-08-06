@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@repo/db";
 import { PlanForm, type PlanFormValues } from "@/components/plan-form";
 import { DeletePlanButton } from "@/components/delete-plan-button";
+import { AdminBreadcrumb } from "@/components/admin-breadcrumb";
 import { EXAM_CATEGORIES } from "@/lib/validations/exam.validation";
 
 export default async function EditPlanPage({
@@ -24,11 +25,13 @@ export default async function EditPlanPage({
 
   return (
     <div className="mx-auto max-w-xl">
-      <div className="flex items-center justify-between">
+      <AdminBreadcrumb
+        items={[{ label: "Plans", href: "/plans" }, { label: plan.name }]}
+      />
+      <div className="mb-6 flex items-center justify-between">
         <h1 className="font-heading text-2xl font-medium">Edit plan</h1>
         <DeletePlanButton id={plan.id} name={plan.name} />
       </div>
-      <p className="mt-1 mb-6 text-sm text-muted-foreground">{plan.name}</p>
       <PlanForm initial={initial} />
     </div>
   );

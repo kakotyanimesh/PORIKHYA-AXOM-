@@ -20,9 +20,6 @@ importers:
 
   apps/admin-app:
     dependencies:
-      '@base-ui/react':
-        specifier: ^1.6.0
-        version: 1.6.0(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@repo/auth':
         specifier: workspace:*
         version: link:../../packages/auth

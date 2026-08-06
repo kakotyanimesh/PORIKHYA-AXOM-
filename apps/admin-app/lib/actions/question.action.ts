@@ -1,14 +1,13 @@
 "use server";
 
 import { updateTag } from "next/cache";
-import { prisma, type Prisma } from "@repo/db";
+import { prisma } from "@repo/db";
 import { requireAdmin } from "@/lib/utils/require-admin";
+import { writeQuestion } from "@/lib/utils/write-question";
 import { z } from "zod";
 import {
-  createQuestionSchema,
   updateQuestionSchema,
   questionSchema,
-  type QuestionInput,
 } from "../validations/question.validation";
 
 export type QuestionActionResult =
@@ -19,71 +18,6 @@ function invalidate(examId: string, subsectionId?: string | null) {
   updateTag(`exam-sections:${examId}`);
   updateTag(`exam:${examId}`);
   updateTag(`exam-questions:${examId}:${subsectionId ?? "ungrouped"}`);
-}
-
-/**
- * Shared create helper — the SINGLE place a Question + its Options get written.
- * Used by the manual editor here AND the Phase F bulk import, so the two author
- * paths can never drift. Runs inside a transaction. `subsectionId` null =
- * exam-level. Caller must pass already-validated input.
- */
-export async function writeQuestion(
-  tx: Prisma.TransactionClient,
-  examId: string,
-  input: QuestionInput,
-): Promise<string> {
-  const question = await tx.question.create({
-    data: {
-      exam_id: examId,
-      subsection_id: input.subsection_id ?? null,
-      content: input.content,
-      content_assamese: input.content_assamese || null,
-      solution_text: input.solution_text || null,
-      solution_text_assamese: input.solution_text_assamese || null,
-      order: input.order,
-      options: {
-        create: input.options.map((o, i) => ({
-          text: o.text,
-          text_assamese: o.text_assamese || null,
-          is_correct: o.is_correct,
-          order: i,
-        })),
-      },
-    },
-  });
-  return question.id;
-}
-
-export async function createQuestion(
-  input: unknown,
-): Promise<QuestionActionResult> {
-  await requireAdmin();
-  const parsed = createQuestionSchema.safeParse(input);
-  if (!parsed.success) {
-    return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
-  }
-  const { exam_id, ...question } = parsed.data;
-
-  // Cap at the exam's planned total_questions (0 = uncapped). Guards against a
-  // stale client count letting more through than the exam allows.
-  const exam = await prisma.exam.findUnique({
-    where: { id: exam_id },
-    select: { total_questions: true },
-  });
-  if (!exam) return { success: false, error: "Exam not found" };
-  if (exam.total_questions > 0) {
-    const current = await prisma.question.count({ where: { exam_id } });
-    if (current >= exam.total_questions) {
-      return {
-        success: false,
-        error: `This exam is full (${exam.total_questions} questions). Raise "Total questions" on the exam to add more.`,
-      };
-    }
-  }
-
-  const id = await prisma.$transaction((tx) => writeQuestion(tx, exam_id, question));
-  invalidate(exam_id, question.subsection_id);
-  return { success: true, id };
 }
 
 const batchSchema = z.object({

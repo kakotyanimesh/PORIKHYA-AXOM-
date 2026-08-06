@@ -1,22 +1,50 @@
-import Link from "next/link";
+import { Suspense } from "react";
+import { AppSidebar, AppSidebarSkeleton } from "@/components/app-sidebar";
 import { requireAdmin } from "@/lib/utils/require-admin";
+import { Skeleton } from "@repo/ui/components/skeleton";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@repo/ui/components/sidebar";
 
-export default async function AdminLayout({
+// Authorization gate. requireAdmin() redirects non-admins BEFORE children
+// render, so no admin content ever streams to an unauthorized (but logged-in)
+// user — proxy.ts only checks cookie presence, not the ADMIN_EMAILS allowlist.
+// Sitting inside <Suspense> keeps the private-cached session read out of the
+// static prerender (cacheComponents). cache()-deduped with AppSidebar.
+async function AdminGate({ children }: { children: React.ReactNode }) {
+  await requireAdmin();
+  return <>{children}</>;
+}
+
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const admin = await requireAdmin();
-
   return (
-    <div className="flex min-h-svh flex-col">
-      <header className="flex items-center justify-between border-b px-6 py-3">
-        <Link href="/" className="font-heading text-lg font-medium">
-          porikhyaaxom admin
-        </Link>
-        <span className="text-sm text-muted-foreground">{admin.email}</span>
-      </header>
-      <main className="flex-1 p-6">{children}</main>
-    </div>
+    <SidebarProvider>
+      <Suspense fallback={<AppSidebarSkeleton />}>
+        <AppSidebar />
+      </Suspense>
+      <SidebarInset>
+        <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger />
+        </header>
+        <div className="mx-auto w-full max-w-6xl flex-1 px-4 pt-6 pb-8 sm:pt-8">
+          <Suspense
+            fallback={
+              <div className="space-y-4">
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-64 w-full" />
+              </div>
+            }
+          >
+            <AdminGate>{children}</AdminGate>
+          </Suspense>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

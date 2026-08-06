@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@repo/db";
-import { Button } from "@repo/ui/components/button";
 import { SubsectionManager, type SubsectionRow } from "@/components/subsection-manager";
+import { AdminBreadcrumb } from "@/components/admin-breadcrumb";
 
 export default async function SubsectionsPage({
   params,
@@ -41,16 +40,15 @@ export default async function SubsectionsPage({
 
   return (
     <div className="mx-auto max-w-3xl">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-heading text-2xl font-medium">Subsections</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{exam.name}</p>
-        </div>
-        <Button variant="outline" size="sm" render={<Link href={`/exams/${exam.id}/edit`} />}>
-          Back to exam
-        </Button>
-      </div>
-      <p className="mt-4 mb-6 text-sm text-muted-foreground">
+      <AdminBreadcrumb
+        items={[
+          { label: "Exams", href: "/exams" },
+          { label: exam.name, href: `/exams/${exam.id}/edit` },
+          { label: "Subsections" },
+        ]}
+      />
+      <h1 className="font-heading text-2xl font-medium">Subsections</h1>
+      <p className="mt-1 mb-6 text-sm text-muted-foreground">
         Subsections override the exam&apos;s marks and negative-marking. Leave a
         field blank to inherit the exam value.
       </p>

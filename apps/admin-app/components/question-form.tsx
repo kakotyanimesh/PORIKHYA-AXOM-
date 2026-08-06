@@ -42,7 +42,7 @@ export function QuestionForm({
     order: String(initial.order),
     options: initial.options.map((o) => ({ text: o.text, text_assamese: o.text_assamese })),
   });
-  const [correctIndex, setCorrectIndex] = useState<number>(
+  const [correctIndex, setCorrectIndex] = useState<number>(() =>
     initial.options.findIndex((o) => o.is_correct),
   );
   const [pending, startTransition] = useTransition();
