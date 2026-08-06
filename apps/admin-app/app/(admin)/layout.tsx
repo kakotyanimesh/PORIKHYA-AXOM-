@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { AppSidebar, AppSidebarSkeleton } from "@/components/app-sidebar";
+import Link from "next/link";
 import { requireAdmin } from "@/lib/utils/require-admin";
 import { Skeleton } from "@repo/ui/components/skeleton";
 import {
@@ -8,43 +8,40 @@ import {
   SidebarTrigger,
 } from "@repo/ui/components/sidebar";
 
-// Authorization gate. requireAdmin() redirects non-admins BEFORE children
-// render, so no admin content ever streams to an unauthorized (but logged-in)
-// user — proxy.ts only checks cookie presence, not the ADMIN_EMAILS allowlist.
-// Sitting inside <Suspense> keeps the private-cached session read out of the
-// static prerender (cacheComponents). cache()-deduped with AppSidebar.
-async function AdminGate({ children }: { children: React.ReactNode }) {
-  await requireAdmin();
-  return <>{children}</>;
-}
-
+// Sync layout so the shell prerenders. All per-request auth (headers()) lives
+// inside Suspense boundaries below — required by Next 16 cacheComponents, else
+// the whole route blocks at prerender.
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <SidebarProvider>
-      <Suspense fallback={<AppSidebarSkeleton />}>
-        <AppSidebar />
-      </Suspense>
-      <SidebarInset>
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger />
-        </header>
-        <div className="mx-auto w-full max-w-6xl flex-1 px-4 pt-6 pb-8 sm:pt-8">
-          <Suspense
-            fallback={
-              <div className="space-y-4">
-                <Skeleton className="h-8 w-48" />
-                <Skeleton className="h-64 w-full" />
-              </div>
-            }
-          >
-            <AdminGate>{children}</AdminGate>
-          </Suspense>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="flex min-h-svh flex-col">
+      <header className="flex items-center justify-between border-b px-6 py-3">
+        <Link href="/" className="font-heading text-lg font-medium">
+          porikhyaaxom admin
+        </Link>
+        <Suspense fallback={null}>
+          <AdminEmail />
+        </Suspense>
+      </header>
+      <main className="flex-1 p-6">
+        <Suspense fallback={<p className="text-sm text-muted-foreground">Loading…</p>}>
+          <AdminGate>{children}</AdminGate>
+        </Suspense>
+      </main>
+    </div>
   );
+}
+
+// Authorization gate — runs before children render, redirects non-admins.
+async function AdminGate({ children }: { children: React.ReactNode }) {
+  await requireAdmin();
+  return <>{children}</>;
+}
+
+async function AdminEmail() {
+  const admin = await requireAdmin(); // cache()'d — shares the read with AdminGate
+  return <span className="text-sm text-muted-foreground">{admin.email}</span>;
 }
