@@ -19,11 +19,11 @@ export function Hero() {
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -left-24 top-0 -z-0 h-80 w-[38rem] rounded-full bg-primary/20 blur-[130px]"
+        className="pointer-events-none absolute -left-24 top-0 -z-0 hidden h-80 w-[38rem] rounded-full bg-primary/20 blur-[130px] sm:block"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute right-0 top-32 -z-0 h-72 w-lg rounded-full bg-brand-accent/15 blur-[130px]"
+        className="pointer-events-none absolute right-0 top-32 -z-0 hidden h-72 w-lg rounded-full bg-brand-accent/15 blur-[130px] sm:block"
       />
 
       <div className="relative mx-auto grid max-w-6xl gap-16 px-6 pb-28 pt-36 sm:pb-32 lg:gap-20 lg:pt-40">
