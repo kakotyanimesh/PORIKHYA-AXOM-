@@ -41,7 +41,7 @@ export function HeroPreview() {
   return (
     <div className="relative">
       {/* main attempt panel */}
-      <div className="landing-card relative z-10 overflow-hidden rounded-3xl border border-border/60 bg-background/80 backdrop-blur">
+      <div className="landing-card relative z-10 overflow-hidden rounded-3xl border border-border/60 bg-background sm:bg-background/80 sm:backdrop-blur">
         <div className="flex items-center justify-between border-b border-border/50 px-5 py-3.5">
           <div className="flex items-center gap-2 text-sm font-medium">
             <span className="size-2 rounded-full bg-primary" />

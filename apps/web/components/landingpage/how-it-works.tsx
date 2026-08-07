@@ -5,7 +5,6 @@ import {
   motion,
   useScroll,
   useTransform,
-  useMotionTemplate,
   useReducedMotion,
   type MotionValue,
 } from "motion/react";
@@ -249,12 +248,9 @@ function Layer({
     range,
     reduce || variant === "card" ? [0, 0, 0, 0] : [16, 0, 0, -16],
   );
-  const blurN = useTransform(progress, range, reduce ? [0, 0, 0, 0] : [6, 0, 0, 6]);
-  const filter = useMotionTemplate`blur(${blurN}px)`;
-
   return (
     <motion.div
-      style={{ opacity, scale, y, filter }}
+      style={{ opacity, scale, y }}
       className={
         variant === "card"
           ? "absolute inset-0 flex items-center justify-center px-6"
@@ -298,7 +294,7 @@ export function HowItWorks() {
             <div className="grid flex-1 items-center gap-6 sm:gap-10 lg:grid-cols-2 lg:gap-16">
               {/* pinned device — crossfades through the four screens */}
               <div className="flex min-h-0 items-center justify-center">
-                <div className="landing-card relative aspect-[4/5] w-full max-w-[13.5rem] overflow-hidden rounded-[1.75rem] border border-border/60 bg-background/80 backdrop-blur sm:max-w-[17rem] lg:max-w-[21rem] lg:rounded-[2rem]">
+                <div className="landing-card relative aspect-[4/5] w-full max-w-[13.5rem] overflow-hidden rounded-[1.75rem] border border-border/60 bg-background sm:max-w-[17rem] sm:bg-background/80 sm:backdrop-blur lg:max-w-[21rem] lg:rounded-[2rem]">
                   <div className="flex items-center gap-1.5 border-b border-border/50 px-4 py-2.5">
                     <span className="size-2 rounded-full bg-primary" />
                     <span className="size-1.5 rounded-full bg-border" />

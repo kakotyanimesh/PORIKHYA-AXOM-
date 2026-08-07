@@ -9,11 +9,11 @@ export function Cta() {
         {/* glow backdrop */}
         <div
           aria-hidden
-          className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[40rem] -translate-x-1/2 rounded-full bg-primary/25 blur-[120px]"
+          className="pointer-events-none absolute -top-24 left-1/2 hidden h-64 w-[40rem] -translate-x-1/2 rounded-full bg-primary/25 blur-[120px] sm:block"
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute -bottom-32 right-0 h-64 w-[30rem] rounded-full bg-brand-accent/15 blur-[120px]"
+          className="pointer-events-none absolute -bottom-32 right-0 hidden h-64 w-[30rem] rounded-full bg-brand-accent/15 blur-[120px] sm:block"
         />
 
         <div className="relative">
