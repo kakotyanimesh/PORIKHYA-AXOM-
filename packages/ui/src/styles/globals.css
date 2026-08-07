@@ -193,6 +193,29 @@
       transform: translateY(6px);
     }
   }
+
+  /* Landing surface depth — one soft, layered shadow reused across all cards.
+     color-mix on --foreground so it adapts to light/dark with no override. */
+  .landing-card {
+    box-shadow:
+      0 1px 2px -1px color-mix(in oklch, var(--foreground) 10%, transparent),
+      0 14px 34px -18px color-mix(in oklch, var(--foreground) 20%, transparent);
+  }
+
+  /* Scroll-edge effect under the fixed nav: a soft fade where content meets
+     floating chrome, instead of a hard 1px divider (Apple §12). No JS. */
+  .landing-nav::after {
+    content: "";
+    position: absolute;
+    inset: 100% 0 auto 0;
+    height: 24px;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in oklch, var(--background) 55%, transparent),
+      transparent
+    );
+    pointer-events: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -238,6 +261,25 @@
   }
 }
 
+@keyframes landing-bar-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes landing-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
     /* Fade-rise a card as it scrolls into view. Per-card --reveal-i offsets the
@@ -255,6 +297,20 @@
       animation-timeline: view();
       animation-range: entry calc(var(--bar-i, 0) * 3%) cover 22%;
     }
+
+    /* Grow a horizontal bar from its left edge as it scrolls in. */
+    .bar-rise-x {
+      transform-origin: left;
+      animation: landing-bar-grow-x linear both;
+      animation-timeline: view();
+      animation-range: entry calc(var(--bar-i, 0) * 4%) cover 24%;
+    }
+  }
+
+  /* Gentle idle float for the hero preview chip. Motion-only, so
+     reduced-motion users get a static chip. */
+  .landing-float {
+    animation: landing-float 6s ease-in-out infinite;
   }
 
   /* Smoothly animate native <details> open/close height. Chrome 131+. */
