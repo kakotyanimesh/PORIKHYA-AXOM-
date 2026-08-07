@@ -18,6 +18,18 @@ export function HeroPreview() {
     "unseen",
     "answered",
     "unseen",
+    "answered",
+    "answered",
+    "current",
+    "skipped",
+    "answered",
+    "unseen",
+    "answered",
+    "answered",
+    "skipped",
+    "unseen",
+    "answered",
+    "unseen",
   ];
   const tone: Record<string, string> = {
     answered: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
@@ -79,11 +91,14 @@ export function HeroPreview() {
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
               Question palette
             </p>
-            <div className="mt-2.5 grid grid-cols-6 gap-1.5">
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
               {palette.map((s, i) => (
                 <div
                   key={i}
-                  className={`flex aspect-square items-center justify-center rounded-md border text-[11px] font-medium ${tone[s]}`}
+                  style={{ "--pop-i": i } as React.CSSProperties}
+                  className={`palette-pop flex size-6 items-center justify-center rounded-md border text-[10px] font-medium ${
+                    s === "current" ? "palette-current " : ""
+                  }${tone[s]}`}
                 >
                   {i + 1}
                 </div>
@@ -94,7 +109,7 @@ export function HeroPreview() {
       </div>
 
       {/* floating result chip — bottom-right, overlaps the panel */}
-      <div className="landing-card absolute -bottom-6 -right-4 z-20 hidden w-52 rounded-2xl border border-border/60 bg-background/90 p-4 backdrop-blur sm:block landing-float">
+      <div className="landing-card absolute top-18 -right-25 z-20 hidden w-52 rounded-2xl border border-border/60 bg-background/90 p-4 backdrop-blur sm:block landing-float">
         <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-muted-foreground">
           <span className="inline-flex items-center gap-1">
             <TrendingUp className="size-3 text-emerald-600" /> Result

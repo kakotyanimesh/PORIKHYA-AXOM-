@@ -9,8 +9,9 @@ export function Footer() {
       title: "Product",
       links: [
         { label: "Test series", href: "/signup" },
-        { label: "Previous-year papers", href: "/previous-year-papers" },
         { label: "Pricing", href: "#pricing" },
+        { label: "Terms & Privacy Policy.", href: "/privacypolicy" },
+        
       ],
     },
     {
@@ -19,6 +20,7 @@ export function Footer() {
         { label: "Sign in", href: "/signin" },
         { label: "Sign up", href: "/signup" },
         { label: "Dashboard", href: "/dashboard" },
+        
       ],
     },
   ];
@@ -68,7 +70,7 @@ export function Footer() {
         <div className="mt-14 flex flex-col gap-3 border-t border-border/50 pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <span className="inline-flex items-center gap-2">
             <span className="size-1.5 rounded-full bg-emerald-500" />
-            All systems calm · Guwahati
+            All systems calm · <span className="text-primary">Majuli</span>
           </span>
           <span>© 2026 Porikhya Axom</span>
         </div>

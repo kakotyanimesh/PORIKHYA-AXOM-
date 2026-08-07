@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, Layers, BarChart3, Timer } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
+import { CountUp } from "./count-up";
 
 export function SneakPeek() {
   return (
@@ -120,7 +121,11 @@ function AnalysisCard() {
           <span>82 / 100</span>
         </div>
         <div className="mt-2 flex items-baseline gap-2">
-          <span className="font-heading text-4xl tracking-[-0.02em]">82%</span>
+          <CountUp
+            to={82}
+            suffix="%"
+            className="font-heading text-4xl tracking-[-0.02em]"
+          />
           <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-400">
             Cleared cutoff
           </span>
@@ -244,9 +249,11 @@ function MarksCard() {
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
             Net score
           </p>
-          <p className="mt-1 font-heading text-4xl tracking-[-0.02em]">
-            39<span className="text-lg text-muted-foreground">.25</span>
-          </p>
+          <CountUp
+            to={39.25}
+            decimals={2}
+            className="mt-1 block font-heading text-4xl tracking-[-0.02em]"
+          />
           <p className="text-xs text-muted-foreground">of 50</p>
         </div>
       </div>
@@ -260,9 +267,10 @@ function MarksCard() {
                 style={{ width: r.w, "--bar-i": i } as React.CSSProperties}
               />
             </div>
-            <span className={`w-6 text-right text-sm font-semibold ${r.text}`}>
-              {r.value}
-            </span>
+            <CountUp
+              to={Number(r.value)}
+              className={`w-6 text-right text-sm font-semibold ${r.text}`}
+            />
           </div>
         ))}
       </div>

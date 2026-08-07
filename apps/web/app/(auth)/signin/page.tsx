@@ -12,10 +12,10 @@ function SigninPromo() {
       </div>
       <blockquote className="text-sm text-auth-panel-foreground/80">
         <p>
-          &ldquo;Cleared Assam TET Paper II on the first attempt — the recap cards did
+          &ldquo;Cleared Assam TET Paper II on the first attempt, the recap cards did
           the heavy lifting.&rdquo;
         </p>
-        <footer className="mt-2 text-auth-panel-foreground/60">— Priyanka B., Nagaon</footer>
+        <footer className="mt-2 text-auth-panel-foreground/60">— Animesh Kakoty, Majuli</footer>
       </blockquote>
     </div>
   );

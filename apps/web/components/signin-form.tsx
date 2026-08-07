@@ -77,6 +77,7 @@ export function SigninForm() {
           <Input
             id="email"
             type="email"
+            placeholder="example@gmail.com"
             value={values.email}
             onChange={(e) =>
               setValues((v) => ({ ...v, email: e.target.value }))
@@ -89,6 +90,7 @@ export function SigninForm() {
           <div className="relative">
             <Input
               id="password"
+              placeholder="your password here"
               minLength={8}
               maxLength={20}
               type={showPassword ? "text" : "password"}
@@ -120,13 +122,13 @@ export function SigninForm() {
             <Checkbox checked={rememberMe} onCheckedChange={setRememberMe} />
             Remember me
           </label>
-          <Button
+          {/*<Button
             variant="link"
             className="h-auto p-0 text-muted-foreground"
             render={<Link href="/forgot-password" />}
           >
             Forgot password?
-          </Button>
+          </Button>*/}
         </div>
         <Button type="submit" disabled={pending} className="w-full">
           {pending ? "Signing in..." : "Sign in"}
@@ -135,7 +137,7 @@ export function SigninForm() {
 
       <div className="text-xs text-muted-foreground flex flex-row items-center align-baseline gap-1">
         <p>By creating an account you agree to our</p>
-        <Link href={"/"}>Terms &amp; Privacy Policy.</Link>
+        <Link href={"/privacypolicy"}>Terms &amp; Privacy Policy.</Link>
       </div>
     </div>
   );

@@ -95,6 +95,7 @@ export function SignupForm() {
         <div className="auth-field-enter flex flex-col gap-2">
           <Label htmlFor="username">Username</Label>
           <Input
+          placeholder="username_"
             id="username"
             maxLength={30}
             minLength={3}
@@ -107,6 +108,7 @@ export function SignupForm() {
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
+            placeholder="example@email.com"
             type="email"
             value={values.email}
             onChange={handleChange("email")}
@@ -117,6 +119,7 @@ export function SignupForm() {
           <Label htmlFor="phone_number">Phone number</Label>
           <Input
             id="phone_number"
+            placeholder="10 digit Indian Number"
             type="tel"
             maxLength={10}
             value={values.phone_number}
@@ -128,6 +131,7 @@ export function SignupForm() {
           <Label htmlFor="password">Password</Label>
           <div className="relative">
             <Input
+            placeholder="8 character password"
               minLength={8}
               maxLength={20}
               id="password"
@@ -137,11 +141,11 @@ export function SignupForm() {
               required
               className="pr-9"
             />
-            <Button
+            <button
               type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground"
+              // variant="ghost"
+              // size="icon-sm"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               onClick={() => setShowPassword((s) => !s)}
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
@@ -150,7 +154,7 @@ export function SignupForm() {
               ) : (
                 <Eye className="size-4" />
               )}
-            </Button>
+            </button>
           </div>
           {values.password ? (
             <div className="flex gap-1">

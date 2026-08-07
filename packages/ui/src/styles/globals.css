@@ -280,6 +280,56 @@
   }
 }
 
+/* Marquee: scroll a track one full copy-width leftward. The track holds two
+   identical copies, so -50% loops seamlessly. */
+@keyframes landing-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Pop in: scale up past the target then settle (springy overshoot). Used to
+   stagger the hero question-palette cells in on load. */
+@keyframes landing-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Gentle attention pulse for the "current" palette cell. */
+@keyframes landing-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Line drawing: an SVG path traces itself in. Path uses pathLength="1" so the
+   dash geometry is normalized regardless of the real path length. */
+@keyframes landing-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
     /* Fade-rise a card as it scrolls into view. Per-card --reveal-i offsets the
@@ -311,6 +361,35 @@
      reduced-motion users get a static chip. */
   .landing-float {
     animation: landing-float 6s ease-in-out infinite;
+  }
+
+  /* Continuous right-to-left marquee for the feature ticker. Pauses on hover.
+     Reduced-motion users get a static (clipped) row. */
+  .landing-marquee {
+    animation: landing-marquee 32s linear infinite;
+  }
+
+  .landing-marquee:hover {
+    animation-play-state: paused;
+  }
+
+  /* Staggered pop-in for the hero question-palette cells. Per-cell delay is set
+     inline via --pop-i so the grid cascades in on load. */
+  .palette-pop {
+    animation: landing-pop-in 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: calc(var(--pop-i, 0) * 22ms);
+  }
+
+  /* "Current" cell keeps pulsing after the cascade to mark where you are. */
+  .palette-current {
+    animation: landing-pulse 1.8s ease-in-out infinite 1s;
+  }
+
+  /* Hand-drawn underline traces itself in shortly after load. */
+  .underline-draw path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: landing-draw 900ms cubic-bezier(0.65, 0, 0.35, 1) 450ms both;
   }
 
   /* Smoothly animate native <details> open/close height. Chrome 131+. */

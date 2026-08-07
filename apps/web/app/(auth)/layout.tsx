@@ -1,4 +1,5 @@
-import { Navbar } from "@/components/navbar";
+import Link from "next/link";
+import { Logo } from "@repo/ui/components/logo";
 
 export default function AuthLayout({
   children,
@@ -6,11 +7,15 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <Navbar />
-      <main className="flex min-h-[calc(100svh-4.5rem)] items-center justify-center p-6">
+    <div className="flex min-h-svh flex-col">
+      <header className="flex justify-center p-6">
+        <Link href="/" className="transition-opacity hover:opacity-70">
+          <Logo className="text-base" />
+        </Link>
+      </header>
+      <main className="flex flex-1 items-center justify-center px-6 pb-16">
         {children}
       </main>
-    </>
+    </div>
   );
 }

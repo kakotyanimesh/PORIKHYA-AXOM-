@@ -11,10 +11,17 @@ export const TICKER = [
 
 export function Ticker() {
   return (
-    <div className="border-y border-border/50 bg-muted/20">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-9 gap-y-3 px-6 py-6 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground/70">
-        {TICKER.map((t) => (
-          <span key={t} className="inline-flex items-center gap-2">
+    <div className="overflow-hidden border-y border-border/50 bg-muted/20 `mask-[linear-gradient(to_right,transparent,#000_6%,#000_94%,transparent)]">
+      {/* Track holds two identical copies so the -50% marquee loops seamlessly.
+          Trailing margin per item (not flex gap) keeps each copy exactly half
+          the track width. Second copy is aria-hidden — it's a visual dupe. */}
+      <div className="landing-marquee flex w-max items-center py-6 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground/70">
+        {[...TICKER, ...TICKER].map((t, i) => (
+          <span
+            key={i}
+            aria-hidden={i >= TICKER.length}
+            className="mr-9 inline-flex shrink-0 items-center gap-2 text-primary/60"
+          >
             <span className="text-primary/50">+</span>
             {t}
           </span>
