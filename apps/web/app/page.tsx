@@ -1,7 +1,7 @@
 import { LandingNav } from "@/components/landingpage/landing-nav";
 import { Hero } from "@/components/landingpage/hero";
 import { Ticker } from "@/components/landingpage/ticker";
-import { HowItWorks } from "@/components/landingpage/how-it-works";
+// import { HowItWorks } from "@/components/landingpage/how-it-works";
 import { SneakPeek } from "@/components/landingpage/sneak-peek";
 import { Coverage } from "@/components/landingpage/coverage";
 import { Pricing } from "@/components/landingpage/pricing";
@@ -17,7 +17,7 @@ export default function Home() {
       <main>
         <Hero />
         <Ticker />
-        <HowItWorks />
+        {/*<HowItWorks />*/}
         <SneakPeek />
         <Coverage />
         <Pricing />
