@@ -33,6 +33,5 @@ export const config = {
     "/all-test-series/:path*",
     "/my-subscriptions/:path*",
     "/upgrade/:path*",
-    "/previous-year-papers/:path*",
   ],
 };

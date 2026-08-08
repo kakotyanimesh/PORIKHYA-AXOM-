@@ -11,21 +11,28 @@ export function LandingNav() {
           <Logo className="text-base" />
         </Link>
         <nav className="hidden items-center gap-9 text-sm text-muted-foreground md:flex">
-          <a
-            href="#product"
+          {/* path + hash so these work from any page (e.g. /previous-year-papers),
+              not just "/". A bare "#product" anchors to the current page; an
+              absolute SITE_URL jumps off-origin. Relative "/#..." routes home
+              then scrolls, on both the landing page and elsewhere. */}
+          <Link
+            href="/#product"
             className="transition-colors hover:text-foreground"
           >
             Product
-          </a>
-          <a
-            href="#pricing"
+          </Link>
+          <Link
+            href="/#pricing"
             className="transition-colors hover:text-foreground"
           >
             Pricing
-          </a>
-          <a href="#faq" className="transition-colors hover:text-foreground">
+          </Link>
+          <Link
+            href="/#faq"
+            className="transition-colors hover:text-foreground"
+          >
             FAQ
-          </a>
+          </Link>
         </nav>
         <div className="flex items-center gap-1.5">
           <Button
