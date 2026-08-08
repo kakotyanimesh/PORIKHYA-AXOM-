@@ -24,15 +24,16 @@ export function SigninForm() {
     e.preventDefault();
     const parsed = signinSchema.safeParse({ ...values, rememberMe });
     if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
+      toast.error(parsed.error.issues[0]?.message ?? "Invalid input", { richColors: true });
       return;
     }
     startTransition(async () => {
       const result = await signin(parsed.data);
       if (!result.success) {
-        toast.error(result.error);
+        toast.error(result.error, { richColors: true });
         return;
       }
+      toast.success("Signed in.", { richColors: true });
       router.push("/");
       router.refresh();
     });

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, MailCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -20,6 +21,7 @@ function passwordStrength(password: string) {
 }
 
 export function SignupForm() {
+  const router = useRouter();
   const [values, setValues] = useState({
     username: "",
     email: "",
@@ -47,13 +49,15 @@ export function SignupForm() {
     e.preventDefault();
     const parsed = signupSchema.safeParse(values);
     if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message ?? "Invalid input");
+      toast.error(parsed.error.issues[0]?.message ?? "Invalid input", { richColors: true });
       return;
     }
     startTransition(async () => {
       const result = await signup(parsed.data);
       if (!result.success) {
-        toast.error(result.error);
+        toast.error(result.error, { richColors: true });
+        // Account already exists → send them where they can actually get in.
+        if (result.alreadyExists) router.push("/signin");
         return;
       }
       // No session is created (email must be verified first), so we stay on
@@ -72,10 +76,10 @@ export function SignupForm() {
         callbackURL: "/",
       });
       if (error) {
-        toast.error(error.message ?? "Could not resend email. Try again shortly.");
+        toast.error(error.message ?? "Could not resend email. Try again shortly.", { richColors: true });
         return;
       }
-      toast.success("Verification email sent again.");
+      toast.success("Verification email sent again.", { richColors: true });
       setCooldown(30);
     });
   }

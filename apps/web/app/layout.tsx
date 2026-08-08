@@ -14,8 +14,9 @@ const outfitHeading = Outfit({
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "পৰীক্ষা অসম ",
-  description: "Mock-test / exam-prep platform for Assam competitive exams",
+  title: "পৰীক্ষা অসম",
+  description:
+    "অসম টেট, এছ আই, APSC, ADRE আদি অসমৰ প্ৰতিযোগিতামূলক পৰীক্ষাৰ বাবে মক টেষ্ট আৰু প্ৰস্তুতিৰ প্লেটফৰ্ম।",
 };
 
 export default function RootLayout({
