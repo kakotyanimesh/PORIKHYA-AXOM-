@@ -14,7 +14,7 @@ const outfitHeading = Outfit({
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "porikhyaaxom",
+  title: "পৰীক্ষা অসম ",
   description: "Mock-test / exam-prep platform for Assam competitive exams",
 };
 

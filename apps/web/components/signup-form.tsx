@@ -49,7 +49,8 @@ export function SignupForm() {
         toast.error(result.error);
         return;
       }
-      router.push("/");
+      toast.success("Check your email to verify your account before signing in.");
+      router.push("/signin");
       router.refresh();
     });
   }

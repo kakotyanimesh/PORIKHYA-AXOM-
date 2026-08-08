@@ -3,16 +3,50 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { username } from "better-auth/plugins/username";
 import { nextCookies, toNextJsHandler } from "better-auth/next-js";
 import { prisma } from "@repo/db";
+import { sendEmail } from "./email";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   emailAndPassword: {
     enabled: true,
+    // block sign-in until the email is proven. Better Auth re-sends the
+    // verification mail on a sign-in attempt by an unverified user.
+    requireEmailVerification: true,
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Verify your Porikhyaaxom email",
+        html: `<p>Confirm your email to finish signing up:</p><p><a href="${url}">Verify email</a></p>`,
+      });
+    },
   },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      // User table has no `image` column. Google always maps profile.picture ->
+      // image; spread last, so this drops it before the adapter write.
+      mapProfileToUser: () => ({ image: undefined }),
+    },
+  },
+  // DB-backed so limits actually hold across serverless instances (in-memory
+  // default is useless on Vercel — each cold start gets its own counter).
+  // ponytail: adds one DB round-trip per auth request; fine at this scale, move
+  // to redis storage only if the rate_limit table shows contention.
+  rateLimit: {
+    enabled: true,
+    storage: "database",
+    window: 60,
+    max: 100,
+    customRules: {
+      "/sign-in/email": { window: 60, max: 5 },
+      "/sign-up/email": { window: 60, max: 5 },
+      "/forget-password": { window: 60, max: 3 },
+      "/request-password-reset": { window: 60, max: 3 },
     },
   },
   user: {
@@ -43,16 +77,12 @@ export const auth = betterAuth({
     },
   },
   account: {
-    // ponytail: no email verification flow yet, so this trusts email/password
-    // signups without proof of email ownership — an attacker could
-    // pre-register a victim's email, then inherit the victim's later Google
-    // sign-in into the same account. Revisit before real users sign up: wire
-    // emailVerification.sendVerificationEmail, then drop
-    // requireLocalEmailVerified back to its default (true).
     accountLinking: {
       enabled: true,
       trustedProviders: ["google"],
-      requireLocalEmailVerified: false,
+      // verification flow is wired now, so keep the default: a Google sign-in
+      // only auto-links into an existing local account whose email is verified.
+      requireLocalEmailVerified: true,
     },
     fields: {
       accountId: "account_id",

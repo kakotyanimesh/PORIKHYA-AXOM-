@@ -30,8 +30,7 @@ model User {
   name             String
   username         String?  @unique
   display_username String?
-  phone_number     String
-  image            String?
+  phone_number     String   @unique
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
 
@@ -282,4 +281,15 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+// Better Auth rate-limit store (rateLimit.storage: "database"). Field names match
+// Better Auth defaults (key/count/lastRequest) so no fields mapping needed.
+model RateLimit {
+  id          String @id
+  key         String @unique
+  count       Int
+  lastRequest BigInt
+
+  @@map("rate_limit")
 }
