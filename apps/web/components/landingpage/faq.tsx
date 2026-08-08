@@ -27,7 +27,7 @@ export function Faq() {
   return (
     <section id="faq" className="scroll-mt-20 border-t border-border/50 py-28">
       <div className="mx-auto max-w-2xl px-6">
-        <div className="text-center">
+        <div className="text-left">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
             <span className="text-brand-accent">005</span> · FAQ
           </p>

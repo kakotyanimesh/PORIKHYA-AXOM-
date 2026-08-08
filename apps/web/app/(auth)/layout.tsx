@@ -9,7 +9,7 @@ export default function AuthLayout({
   return (
     <div className="flex min-h-svh flex-col">
       <header className="flex justify-center p-6">
-        <Link href="/" className="transition-opacity hover:opacity-70">
+        <Link href="/">
           <Logo className="text-base" />
         </Link>
       </header>

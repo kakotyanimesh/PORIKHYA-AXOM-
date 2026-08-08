@@ -31,7 +31,7 @@ export function Footer() {
           <div className="max-w-xs">
             <Logo className="text-base" />
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Mocks, notes and honest analytics for Assam&apos;s competitive
+              Mocks, notes and <span><Link href={"/animesh"}>honest </Link></span> analytics for Assam&apos;s competitive
               exams.
             </p>
             <Button

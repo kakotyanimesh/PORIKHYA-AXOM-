@@ -59,7 +59,7 @@ export function Pricing() {
   return (
     <section id="pricing" className="scroll-mt-20 border-t border-border/50 py-28">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="text-center">
+        <div className="text-left">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
             <span className="text-brand-accent">004</span> · Pricing
           </p>
@@ -69,13 +69,13 @@ export function Pricing() {
               One honest price.
             </span>
           </h2>
-          <p className="mx-auto mt-4 max-w-md text-balance text-sm leading-relaxed text-muted-foreground">
+          <p className=" mt-4 max-w-md text-balance text-sm leading-relaxed text-muted-foreground">
             Try free first. Or unlock a single exam for just ₹
             {SINGLE_TEST_PRICE_INR}. Upgrade only when you&apos;re ready.
           </p>
         </div>
 
-        <div className="mt-14 grid items-start gap-5 lg:grid-cols-3">
+        <div className="mt-19 grid items-start gap-5 lg:grid-cols-3">
           {tiers.map((t, i) => (
             <div
               key={t.name}
