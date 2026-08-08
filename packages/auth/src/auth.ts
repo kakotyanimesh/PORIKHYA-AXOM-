@@ -3,7 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { username } from "better-auth/plugins/username";
 import { nextCookies, toNextJsHandler } from "better-auth/next-js";
 import { prisma } from "@repo/db";
-import { sendEmail } from "./email";
+import { sendEmail, renderVerificationEmail } from "./email";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
@@ -17,10 +17,12 @@ export const auth = betterAuth({
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
+      const { html, text } = renderVerificationEmail({ name: user.name, url });
       await sendEmail({
         to: user.email,
-        subject: "Verify your Porikhyaaxom email",
-        html: `<p>Confirm your email to finish signing up:</p><p><a href="${url}">Verify email</a></p>`,
+        subject: "Verify your PorikhyaAxom email",
+        html,
+        text,
       });
     },
   },

@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useTransition, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition, type FormEvent } from "react";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
@@ -21,7 +20,6 @@ function passwordStrength(password: string) {
 }
 
 export function SignupForm() {
-  const router = useRouter();
   const [values, setValues] = useState({
     username: "",
     email: "",
@@ -30,6 +28,15 @@ export function SignupForm() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [submitted, setSubmitted] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const [resending, startResend] = useTransition();
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
 
   function handleChange(field: keyof typeof values) {
     return (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -49,10 +56,73 @@ export function SignupForm() {
         toast.error(result.error);
         return;
       }
-      toast.success("Check your email to verify your account before signing in.");
-      router.push("/signin");
-      router.refresh();
+      // No session is created (email must be verified first), so we stay on
+      // this page and swap to a confirmation panel instead of redirecting —
+      // a router.refresh() here would hang the transition and stick the button.
+      setSubmitted(true);
+      setCooldown(30);
     });
+  }
+
+  function handleResend() {
+    if (cooldown > 0 || resending) return;
+    startResend(async () => {
+      const { error } = await authClient.sendVerificationEmail({
+        email: values.email,
+        callbackURL: "/",
+      });
+      if (error) {
+        toast.error(error.message ?? "Could not resend email. Try again shortly.");
+        return;
+      }
+      toast.success("Verification email sent again.");
+      setCooldown(30);
+    });
+  }
+
+  if (submitted) {
+    return (
+      <div className="content-enter mx-auto flex w-full max-w-sm flex-col items-center gap-6 text-center">
+        <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <MailCheck className="size-7" />
+        </div>
+        <div className="flex flex-col gap-2">
+          <h1 className="font-heading text-2xl font-medium">Check your email</h1>
+          <p className="text-sm text-muted-foreground">
+            We sent a verification link to{" "}
+            <span className="font-medium text-foreground">{values.email}</span>.
+            Open it to activate your account, then sign in.
+          </p>
+        </div>
+        <div className="flex w-full flex-col gap-3">
+          <Button className="w-full" render={<Link href="/signin" />}>
+            Go to sign in
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={handleResend}
+            disabled={cooldown > 0 || resending}
+          >
+            {resending
+              ? "Resending..."
+              : cooldown > 0
+                ? `Resend email in ${cooldown}s`
+                : "Resend email"}
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Already verified on another device? Just{" "}
+          <Link
+            href="/signin"
+            className="text-foreground underline underline-offset-2"
+          >
+            sign in
+          </Link>
+          .
+        </p>
+      </div>
+    );
   }
 
   const strength = passwordStrength(values.password);
