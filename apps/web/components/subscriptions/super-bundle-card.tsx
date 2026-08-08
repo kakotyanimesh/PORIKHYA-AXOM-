@@ -1,9 +1,7 @@
-import Link from "next/link";
-import { ArrowRight, CheckCircle2, Crown } from "lucide-react";
+import { CheckCircle2, Crown } from "lucide-react";
 import { Card } from "@repo/ui/components/card";
-import { Button } from "@repo/ui/components/button";
 import { Badge } from "@repo/ui/components/badge";
-import { LinkPending } from "@/components/link-pending";
+import { BuyPlanButton } from "@/components/checkout/buy-plan-button";
 import type { PlanOption } from "@/lib/actions/my-subscriptions.action";
 
 const SUPER_FEATURES = [
@@ -57,11 +55,7 @@ export function SuperBundleCard({ plan }: { plan: PlanOption }) {
       </ul>
 
       <div className="mt-auto pt-6">
-        <Button className="w-full" render={<Link href={`/checkout?plan=${plan.id}`} />}>
-          Get the Super bundle
-          <ArrowRight className="size-4" />
-          <LinkPending />
-        </Button>
+        <BuyPlanButton planId={plan.id}>Get the Super bundle</BuyPlanButton>
       </div>
     </Card>
   );

@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { ArrowRight, CheckCircle2, Zap } from "lucide-react";
+import { CheckCircle2, Zap } from "lucide-react";
 import { Card } from "@repo/ui/components/card";
-import { Button } from "@repo/ui/components/button";
 import { cn } from "@repo/ui/lib/utils";
-import { LinkPending } from "@/components/link-pending";
+import { BuyPlanButton } from "@/components/checkout/buy-plan-button";
 import type { CategoryPlanGroup } from "@/lib/actions/my-subscriptions.action";
 import { catMeta } from "./category-meta";
 
@@ -80,14 +78,9 @@ export function CategoryPlanCard({ group }: { group: CategoryPlanGroup }) {
           )}
         </div>
 
-        <Button
-          className="mt-4 w-full"
-          render={<Link href={`/checkout?plan=${active.planId}`} />}
-        >
+        <BuyPlanButton planId={active.planId} className="mt-4 w-full">
           Select
-          <ArrowRight className="size-4" />
-          <LinkPending />
-        </Button>
+        </BuyPlanButton>
       </div>
     </Card>
   );
