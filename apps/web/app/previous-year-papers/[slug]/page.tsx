@@ -69,9 +69,7 @@ function quizJsonLd(paper: PyqPaper, slug: string) {
         acceptedAnswer: correct
           ? {
               "@type": "Answer",
-              text: [correct.text, q.solution_text]
-                .filter(Boolean)
-                .join(" — "),
+              text: [correct.text, q.solution_text].filter(Boolean).join(" — "),
             }
           : undefined,
       };
@@ -122,7 +120,7 @@ export default async function PreviousYearPaperPage({
           {label}
           {paper.year ? ` · ${paper.year}` : ""}
         </p>
-        <h1 className="mt-2 font-heading text-3xl tracking-[-0.02em] sm:text-4xl">
+        <h1 className="mt-2 text-3xl tracking-[-0.02em] sm:text-4xl">
           {paper.name}
         </h1>
         <p className="mt-2 text-base text-muted-foreground">
@@ -141,7 +139,7 @@ export default async function PreviousYearPaperPage({
           {paper.questions.map((q, i) => (
             <li key={q.id} id={`q${i + 1}`} className="scroll-mt-20">
               <div className="flex gap-3">
-                <span className="mt-1 shrink-0 font-heading text-base text-muted-foreground tabular-nums">
+                <span className="mt-1 shrink-0 text-base text-muted-foreground tabular-nums">
                   {i + 1}.
                 </span>
                 <div className="min-w-0 flex-1">

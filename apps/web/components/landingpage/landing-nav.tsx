@@ -33,6 +33,12 @@ export function LandingNav() {
           >
             FAQ
           </Link>
+          <Link
+            href="previous-year-papers"
+            className="transition-colors hover:text-foreground"
+          >
+            PYP
+          </Link>
         </nav>
         <div className="flex items-center gap-1.5">
           <Button

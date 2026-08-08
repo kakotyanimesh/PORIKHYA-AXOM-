@@ -44,7 +44,7 @@ export default async function PreviousYearPapersPage() {
         <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
           Previous Year Papers
         </p>
-        <h1 className="mt-2 font-heading text-3xl tracking-[-0.02em] sm:text-4xl">
+        <h1 className="mt-2 text-3xl tracking-[-0.02em] sm:text-4xl">
           Every past paper,{" "}
           <span className="text-muted-foreground italic">solved.</span>
         </h1>
@@ -67,7 +67,7 @@ export default async function PreviousYearPapersPage() {
             return (
               <section key={category}>
                 <div className="flex items-baseline justify-between">
-                  <h2 className="font-heading text-xl">{meta.label}</h2>
+                  <h2 className="text-xl font-medium">{meta.label}</h2>
                   <span className="text-xs tracking-wide text-muted-foreground uppercase">
                     {list.length} {list.length === 1 ? "paper" : "papers"}
                   </span>
