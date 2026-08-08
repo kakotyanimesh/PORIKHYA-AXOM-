@@ -8,6 +8,7 @@ import { Button } from "@repo/ui/components/button";
 import { Badge } from "@repo/ui/components/badge";
 import { cn } from "@repo/ui/lib/utils";
 import { LinkPending } from "@/components/link-pending";
+import { BuyPlanButton } from "@/components/checkout/buy-plan-button";
 import type { CategoryPlanGroup } from "@/lib/actions/my-subscriptions.action";
 import { catMeta } from "./category-meta";
 
@@ -101,14 +102,9 @@ export function PricingTable({
                   </span>
                 </p>
 
-                <Button
-                  className="shrink-0"
-                  render={<Link href={`/checkout?plan=${d.planId}`} />}
-                >
+                <BuyPlanButton planId={d.planId} className="shrink-0">
                   Select
-                  <ArrowRight className="size-4" />
-                  <LinkPending />
-                </Button>
+                </BuyPlanButton>
               </div>
             );
           })}

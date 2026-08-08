@@ -11,9 +11,11 @@ import { useRazorpayCheckout } from "./use-razorpay-checkout";
 export function BuyPlanButton({
   planId,
   children,
+  className = "w-full",
 }: {
   planId: string;
   children: React.ReactNode;
+  className?: string;
 }) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
@@ -44,7 +46,7 @@ export function BuyPlanButton({
   }
 
   return (
-    <Button className="w-full" disabled={pending} onClick={buy}>
+    <Button className={className} disabled={pending} onClick={buy}>
       {pending && <Loader2Icon className="animate-spin" />}
       {pending ? "Starting checkout…" : children}
     </Button>
