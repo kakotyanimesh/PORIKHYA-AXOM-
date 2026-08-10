@@ -23,6 +23,18 @@ export async function startExamAttempt(
   const parsed = startExamAttemptSchema.parse(input);
   const user = await getCurrentUser();
 
+  // A published answer-key exam (is_pyq_public) is never attemptable — its
+  // solutions are public on the PYQ page, so grading it would be meaningless and
+  // trivially gameable. Refuse before the access gate and the one-attempt lock
+  // (F1 guard). Mutation-boundary backstop to the listing/instructions exclusion.
+  const exam = await prisma.exam.findUnique({
+    where: { id: parsed.exam_id },
+    select: { is_pyq_public: true },
+  });
+  if (!exam || exam.is_pyq_public) {
+    return { status: "no_access" };
+  }
+
   // gate BEFORE the lock — a paid exam must not burn its one attempt for a user
   // who never paid. Same access rule as the listing cards (shared helper).
   if (!(await hasExamAccess(user.id, parsed.exam_id))) {

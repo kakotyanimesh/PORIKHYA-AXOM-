@@ -31,7 +31,9 @@ export async function getAllTestSeries(): Promise<TestSeriesExam[]> {
   cacheLife("hours");
 
   return prisma.exam.findMany({
-    where: { is_active: true },
+    // is_pyq_public exams are public answer keys, not sellable/attemptable mocks —
+    // excluded from every attemptable surface so an exam is never both (F1 guard).
+    where: { is_active: true, is_pyq_public: false },
     select: testSeriesExamSelect,
     orderBy: [{ series_name: "asc" }, { name: "asc" }],
   });
@@ -45,7 +47,9 @@ export async function getAllSeriesNames(): Promise<string[]> {
   cacheLife("hours");
 
   const rows = await prisma.exam.findMany({
-    where: { is_active: true },
+    // is_pyq_public exams are public answer keys, not sellable/attemptable mocks —
+    // excluded from every attemptable surface so an exam is never both (F1 guard).
+    where: { is_active: true, is_pyq_public: false },
     distinct: ["series_name"],
     select: { series_name: true },
     orderBy: { series_name: "asc" },
@@ -73,7 +77,7 @@ async function fetchMockTestsBySeriesName(seriesName: string): Promise<MockTest[
   cacheLife("hours");
 
   return prisma.exam.findMany({
-    where: { is_active: true, series_name: seriesName },
+    where: { is_active: true, is_pyq_public: false, series_name: seriesName },
     select: mockTestSelect,
     orderBy: { name: "asc" },
   });
@@ -105,7 +109,7 @@ export async function getSeriesPackPlans(
   cacheLife("hours");
 
   const exam = await prisma.exam.findFirst({
-    where: { is_active: true, series_name: seriesName },
+    where: { is_active: true, is_pyq_public: false, series_name: seriesName },
     select: { category: true },
   });
   if (!exam) return null;
