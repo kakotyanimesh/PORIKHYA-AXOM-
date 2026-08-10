@@ -27,7 +27,9 @@ async function fetchExamInstructions(examId: string): Promise<ExamInstructions |
   cacheLife("hours");
 
   const exam = await prisma.exam.findFirst({
-    where: { id: examId, is_active: true },
+    // is_pyq_public exams are public answer keys, not attemptable — exclude so the
+    // detail/attempt pages 404 for them instead of offering a Start gate (F1 guard).
+    where: { id: examId, is_active: true, is_pyq_public: false },
     select: examInstructionsSelect,
   });
   if (!exam) return null;
