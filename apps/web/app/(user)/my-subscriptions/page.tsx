@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { Skeleton } from "@repo/ui/components/skeleton";
-import { getCurrentUser } from "@/lib/utils/current-user";
 import {
   getMySubscriptions,
   getPlanCatalog,
@@ -25,9 +24,8 @@ export default function MySubscriptionsPage() {
 }
 
 async function SubscriptionState() {
-  const user = await getCurrentUser();
   const [subs, catalog] = await Promise.all([
-    getMySubscriptions(user.id),
+    getMySubscriptions(),
     getPlanCatalog(),
   ]);
 

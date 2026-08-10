@@ -2,6 +2,7 @@
 
 import { cacheLife, cacheTag } from "next/cache";
 import { prisma, type Prisma } from "@repo/db";
+import { getCurrentUser } from "@/lib/utils/current-user";
 
 // Decimal → number and enum[] → string[] at the boundary so client components get
 // plain JSON. category_grants values are strings at runtime.
@@ -54,12 +55,19 @@ const subscriptionSelect = {
   _count: { select: { subscription_exams: true } },
 } satisfies Prisma.SubscriptionSelect;
 
+// Identity comes from the session, never from a caller-supplied argument — this
+// is an exported action, so a userId param would be a trivial IDOR (read anyone's
+// subs). getCurrentUser's redirect stays outside the "use cache" boundary by
+// living in this wrapper, not the cached fetch below.
+export async function getMySubscriptions(): Promise<MySubscription[]> {
+  const user = await getCurrentUser();
+  return fetchMySubscriptions(user.id);
+}
+
 // Per-user, private cache. Invalidated explicitly when the user subscribes/cancels
 // (updateTag(`subscription:${userId}`) in the checkout grant action). Plans stack,
 // so a user can have several active subscriptions — return all, newest first.
-export async function getMySubscriptions(
-  userId: string,
-): Promise<MySubscription[]> {
+async function fetchMySubscriptions(userId: string): Promise<MySubscription[]> {
   "use cache: private";
   cacheLife("days");
   cacheTag(`subscription:${userId}`);
