@@ -2,6 +2,8 @@
 
 import { cacheLife, cacheTag } from "next/cache";
 import { prisma, type Prisma } from "@repo/db";
+import { getCurrentUser } from "@/lib/utils/current-user";
+import { hasExamAccess } from "@/lib/utils/subscription-access";
 import {
   getExamAttemptInitSchema,
   getSectionQuestionsSchema,
@@ -83,11 +85,19 @@ async function fetchExamSections(examId: string): Promise<ExamSection[]> {
   return sections;
 }
 
-// one section's worth of questions — never the whole exam in one call
+// one section's worth of questions — never the whole exam in one call.
+// Access gate lives HERE (the data-fetching boundary), not the page: this action
+// is directly invocable from the client, so a page-level check wouldn't protect
+// it. getCurrentUser forces login (redirects otherwise); hasExamAccess blocks
+// any exam the user hasn't unlocked (free / purchased / subscription).
 export async function getSectionQuestions(
   input: GetSectionQuestionsInput,
 ): Promise<AttemptQuestion[]> {
   const parsed = getSectionQuestionsSchema.parse(input);
+  const user = await getCurrentUser();
+  if (!(await hasExamAccess(user.id, parsed.exam_id))) {
+    throw new Error("no_access");
+  }
   return fetchSectionQuestions(parsed.exam_id, parsed.section_id);
 }
 
@@ -97,6 +107,10 @@ export async function getExamAttemptInit(
   input: GetExamAttemptInitInput,
 ): Promise<ExamAttemptInit> {
   const parsed = getExamAttemptInitSchema.parse(input);
+  const user = await getCurrentUser();
+  if (!(await hasExamAccess(user.id, parsed.exam_id))) {
+    throw new Error("no_access");
+  }
   const sections = await fetchExamSections(parsed.exam_id);
   const firstSection = sections[0] ?? null;
   const firstSectionQuestions = firstSection

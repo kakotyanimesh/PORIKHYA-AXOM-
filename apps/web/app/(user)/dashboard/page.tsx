@@ -3,7 +3,6 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Card } from "@repo/ui/components/card";
 import { Button } from "@repo/ui/components/button";
-import { getCurrentUser } from "@/lib/utils/current-user";
 import {
   getRecentSeries,
   getTodayLabel,
@@ -66,8 +65,7 @@ export default function DashboardPage() {
 }
 
 async function Overview() {
-  const user = await getCurrentUser();
-  const stats = await getUserDashboardStats(user.id, user.name);
+  const stats = await getUserDashboardStats();
 
   return (
     <>
@@ -196,8 +194,7 @@ async function SeriesCard() {
 }
 
 async function RecentRows() {
-  const user = await getCurrentUser();
-  const stats = await getUserDashboardStats(user.id, user.name);
+  const stats = await getUserDashboardStats();
   const attempts = stats.attempts.slice(0, 4);
 
   if (attempts.length === 0) {

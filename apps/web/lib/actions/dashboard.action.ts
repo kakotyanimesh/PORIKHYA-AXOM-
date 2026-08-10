@@ -2,6 +2,7 @@
 
 import { cacheLife, cacheTag } from "next/cache";
 import { prisma, type Prisma } from "@repo/db";
+import { getCurrentUser } from "@/lib/utils/current-user";
 
 // completed attempts only — dashboard is about finished tests. Decimal columns
 // serialized to number at the boundary so client components (chart) get plain
@@ -83,10 +84,19 @@ function toAttempt(r: AttemptRow): DashboardAttempt {
   };
 }
 
+// Identity comes from the session, never from caller-supplied arguments — this is
+// an exported action, so userId/userName params would be a trivial IDOR (read
+// anyone's attempt history). getCurrentUser's redirect stays outside the
+// "use cache" boundary by living in this wrapper, not the cached fetch below.
+export async function getUserDashboardStats(): Promise<UserDashboardStats> {
+  const user = await getCurrentUser();
+  return fetchUserDashboardStats(user.id, user.name);
+}
+
 // Per-user, private cache. Held indefinitely and invalidated explicitly when
 // the user submits an exam (revalidateTag(`dashboard:${userId}`) in
 // submit-exam-attempt.action) — that's what refreshes the graph/stats/recent.
-export async function getUserDashboardStats(
+async function fetchUserDashboardStats(
   userId: string,
   userName: string,
 ): Promise<UserDashboardStats> {
