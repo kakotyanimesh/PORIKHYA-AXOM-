@@ -5,18 +5,35 @@ import { nextCookies, toNextJsHandler } from "better-auth/next-js";
 import { prisma } from "@repo/db";
 import { sendEmail, renderVerificationEmail } from "./email";
 
+const configuredOrigins = [
+  process.env.BETTER_AUTH_URL,
+  process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
+  // Local development and the current Vercel deployment.
+  "http://localhost:3000",
+  "https://porikhyaaaxom.vercel.app",
+].filter(
+  (origin): origin is string =>
+    typeof origin === "string" && !origin.includes("your-prod-domain"),
+);
+
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
 export const auth = betterAuth({
+  trustedOrigins: configuredOrigins,
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   emailAndPassword: {
     enabled: true,
-    // block sign-in until the email is proven. Better Auth re-sends the
-    // verification mail on a sign-in attempt by an unverified user.
-    requireEmailVerification: true,
+    // Temporarily disabled while no production mail sender is configured.
+    requireEmailVerification: false,
   },
   emailVerification: {
-    sendOnSignUp: true,
+    // Keep the verification templates and transport wired for later, but don't
+    // send mail until EMAIL_VERIFICATION_ENABLED=true.
+    sendOnSignUp: false,
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
+      if (process.env.EMAIL_VERIFICATION_ENABLED !== "true") return;
       const { html, text } = renderVerificationEmail({ name: user.name, url });
       await sendEmail({
         to: user.email,
@@ -26,15 +43,19 @@ export const auth = betterAuth({
       });
     },
   },
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      // User table has no `image` column. Google always maps profile.picture ->
-      // image; spread last, so this drops it before the adapter write.
-      mapProfileToUser: () => ({ image: undefined }),
-    },
-  },
+  ...(googleClientId && googleClientSecret
+    ? {
+        socialProviders: {
+          google: {
+            clientId: googleClientId,
+            clientSecret: googleClientSecret,
+            // User table has no `image` column. Google always maps profile.picture ->
+            // image; spread last, so this drops it before the adapter write.
+            mapProfileToUser: () => ({ image: undefined }),
+          },
+        },
+      }
+    : {}),
   // DB-backed so limits actually hold across serverless instances (in-memory
   // default is useless on Vercel — each cold start gets its own counter).
   // ponytail: adds one DB round-trip per auth request; fine at this scale, move
@@ -47,6 +68,7 @@ export const auth = betterAuth({
     customRules: {
       "/sign-in/email": { window: 60, max: 5 },
       "/sign-up/email": { window: 60, max: 5 },
+      "/send-verification-email": { window: 60, max: 2 },
       "/forget-password": { window: 60, max: 3 },
       "/request-password-reset": { window: 60, max: 3 },
     },

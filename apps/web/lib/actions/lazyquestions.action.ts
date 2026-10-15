@@ -4,6 +4,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { prisma, type Prisma } from "@repo/db";
 import { getCurrentUser } from "@/lib/utils/current-user";
 import { hasExamAccess } from "@/lib/utils/subscription-access";
+import { enforceRateLimit } from "@/lib/utils/rate-limit";
 import {
   getExamAttemptInitSchema,
   getSectionQuestionsSchema,
@@ -95,6 +96,7 @@ export async function getSectionQuestions(
 ): Promise<AttemptQuestion[]> {
   const parsed = getSectionQuestionsSchema.parse(input);
   const user = await getCurrentUser();
+  await enforceRateLimit({ name: "get-section-questions", limit: 30, windowSeconds: 60, identity: user.id });
   if (!(await hasExamAccess(user.id, parsed.exam_id))) {
     throw new Error("no_access");
   }
@@ -108,6 +110,7 @@ export async function getExamAttemptInit(
 ): Promise<ExamAttemptInit> {
   const parsed = getExamAttemptInitSchema.parse(input);
   const user = await getCurrentUser();
+  await enforceRateLimit({ name: "get-exam-attempt-init", limit: 10, windowSeconds: 60, identity: user.id });
   if (!(await hasExamAccess(user.id, parsed.exam_id))) {
     throw new Error("no_access");
   }

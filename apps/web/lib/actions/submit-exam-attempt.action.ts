@@ -3,6 +3,7 @@
 import { updateTag } from "next/cache";
 import { prisma, type Prisma } from "@repo/db";
 import { getCurrentUser } from "@/lib/utils/current-user";
+import { enforceRateLimit } from "@/lib/utils/rate-limit";
 import {
   submitExamAttemptSchema,
   type SubmitExamAttemptInput,
@@ -70,6 +71,7 @@ export async function submitExamAttempt(
 ): Promise<SubmitExamAttemptResult> {
   const parsed = submitExamAttemptSchema.parse(input);
   const user = await getCurrentUser();
+  await enforceRateLimit({ name: "submit-exam-attempt", limit: 5, windowSeconds: 60, identity: user.id });
 
   const attempt = await prisma.examAttempt.findUnique({
     where: { user_id_exam_id: { user_id: user.id, exam_id: parsed.exam_id } },

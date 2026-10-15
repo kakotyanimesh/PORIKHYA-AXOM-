@@ -9,7 +9,7 @@ import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import { Checkbox } from "@repo/ui/components/checkbox";
-import { authClient } from "@repo/auth/client";
+import { authClient, googleAuthEnabled } from "@repo/auth/client";
 import { signinSchema } from "@/lib/validations/signin.validation";
 import { signin } from "@/lib/actions/signin.action";
 
@@ -34,8 +34,7 @@ export function SigninForm() {
         return;
       }
       toast.success("Signed in.", { richColors: true });
-      router.push("/");
-      router.refresh();
+      router.replace("/dashboard");
     });
   }
 
@@ -55,16 +54,18 @@ export function SigninForm() {
         </p>
       </div>
 
-      <Button
-        type="button"
-        variant="outline"
-        className="w-full"
-        onClick={() =>
-          authClient.signIn.social({ provider: "google", callbackURL: "/" })
-        }
-      >
-        Continue with Google
-      </Button>
+      {googleAuthEnabled && (
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={() =>
+            authClient.signIn.social({ provider: "google", callbackURL: "/" })
+          }
+        >
+          Continue with Google
+        </Button>
+      )}
 
       <div className="flex items-center gap-3 text-xs text-muted-foreground">
         <div className="h-px flex-1 bg-border" />

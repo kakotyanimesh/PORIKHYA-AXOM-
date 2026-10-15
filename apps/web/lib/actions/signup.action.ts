@@ -3,12 +3,21 @@
 import { auth, APIError } from "@repo/auth";
 import { prisma } from "@repo/db";
 import { signupSchema, type SignupInput } from "../validations/signup.validation";
+import { enforceRateLimit, RateLimitExceededError } from "@/lib/utils/rate-limit";
 
 export type SignupResult =
   | { success: true }
   | { success: false; error: string; alreadyExists?: boolean };
 
 export async function signup(input: SignupInput): Promise<SignupResult> {
+  try {
+    await enforceRateLimit({ name: "signup-action", limit: 5, windowSeconds: 60 });
+  } catch (error) {
+    if (error instanceof RateLimitExceededError) {
+      return { success: false, error: error.message };
+    }
+    throw error;
+  }
   const parsed = signupSchema.safeParse(input);
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };

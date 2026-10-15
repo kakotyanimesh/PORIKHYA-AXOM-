@@ -3,6 +3,7 @@
 import { Prisma, prisma } from "@repo/db";
 import { getCurrentUser } from "@/lib/utils/current-user";
 import { hasExamAccess } from "@/lib/utils/subscription-access";
+import { enforceRateLimit } from "@/lib/utils/rate-limit";
 import {
   startExamAttemptSchema,
   type StartExamAttemptInput,
@@ -22,6 +23,7 @@ export async function startExamAttempt(
 ): Promise<StartExamAttemptResult> {
   const parsed = startExamAttemptSchema.parse(input);
   const user = await getCurrentUser();
+  await enforceRateLimit({ name: "start-exam-attempt", limit: 5, windowSeconds: 60, identity: user.id });
 
   // A published answer-key exam (is_pyq_public) is never attemptable — its
   // solutions are public on the PYQ page, so grading it would be meaningless and
