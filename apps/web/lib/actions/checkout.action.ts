@@ -8,6 +8,7 @@ import { SINGLE_TEST_PRICE_INR, toPaise } from "@/lib/pricing";
 import { verifyPaymentSignature } from "@/lib/utils/razorpay-signature";
 import { hasExamAccess } from "@/lib/utils/subscription-access";
 import { grantForOrder } from "@/lib/utils/payment-grant";
+import { enforceRateLimit } from "@/lib/utils/rate-limit";
 import {
   createExamOrderSchema,
   createPlanOrderSchema,
@@ -35,6 +36,7 @@ export async function createExamOrder(
 ): Promise<OrderResult | CheckoutError> {
   const { exam_id } = createExamOrderSchema.parse(input);
   const user = await getCurrentUser();
+  await enforceRateLimit({ name: "create-exam-order", limit: 5, windowSeconds: 60, identity: user.id });
 
   if (await hasExamAccess(user.id, exam_id)) return { error: "already_owned" };
 
@@ -78,6 +80,7 @@ export async function createPlanOrder(
 ): Promise<OrderResult | CheckoutError> {
   const { plan_id } = createPlanOrderSchema.parse(input);
   const user = await getCurrentUser();
+  await enforceRateLimit({ name: "create-plan-order", limit: 5, windowSeconds: 60, identity: user.id });
 
   const plan = await prisma.plan.findUnique({
     where: { id: plan_id },
@@ -135,6 +138,7 @@ export async function verifyPayment(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
     verifyPaymentSchema.parse(input);
+  await enforceRateLimit({ name: "verify-payment", limit: 10, windowSeconds: 60 });
 
   if (
     !verifyPaymentSignature(razorpay_order_id, razorpay_payment_id, razorpay_signature)

@@ -52,8 +52,8 @@ const TERMS: Section[] = [
           activity under your account. One person, one account.
         </p>
         <p>
-          You must verify your email address before signing in. We may suspend
-          or close accounts that provide false information or are used to abuse
+          Keep your email address and phone number accurate. We may suspend or
+          close accounts that provide false information or are used to abuse
           the platform.
         </p>
       </>

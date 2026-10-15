@@ -36,8 +36,12 @@ export function AccountMenuContent({ user }: { user: AccountUser }) {
   const router = useRouter();
 
   async function handleLogout() {
-    await authClient.signOut();
-    router.push("/signin");
+    const { error } = await authClient.signOut();
+    if (error) {
+      console.error("Logout failed", error);
+      return;
+    }
+    router.replace("/signin");
   }
 
   return (
