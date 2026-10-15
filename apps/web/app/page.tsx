@@ -16,6 +16,7 @@ export default function Home() {
 
       <main>
         <Hero />
+        <h1 className="text-red-900">animesh</h1>
         <Ticker />
         {/*<HowItWorks />*/}
         <SneakPeek />
