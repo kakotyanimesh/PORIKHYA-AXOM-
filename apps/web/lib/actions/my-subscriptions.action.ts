@@ -1,6 +1,5 @@
 "use server";
 
-import { cache } from "react";
 import { cacheLife, cacheTag } from "next/cache";
 import { prisma, type Prisma } from "@repo/db";
 import { getCurrentUser } from "@/lib/utils/current-user";
@@ -62,15 +61,13 @@ const subscriptionSelect = {
 // living in this wrapper, not the cached fetch below.
 export async function getMySubscriptions(): Promise<MySubscription[]> {
   const user = await getCurrentUser();
-  return fetchMySubscriptionsForRender(user.id);
+  return fetchMySubscriptions(user.id);
 }
-
-const fetchMySubscriptionsForRender = cache(fetchMySubscriptions);
 
 // Persistent server cache keyed by authenticated user ID. Invalidated when the
 // user subscribes/cancels. Plans stack, so return all, newest first.
 async function fetchMySubscriptions(userId: string): Promise<MySubscription[]> {
-  "use cache";
+  "use cache: private";
   cacheLife("days");
   cacheTag(`subscription:${userId}`);
 

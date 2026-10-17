@@ -1,11 +1,17 @@
 import { cache } from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { cacheLife, cacheTag } from "next/cache";
 import { auth } from "@repo/auth";
 import type { AccountUser } from "@/components/account-menu";
 
 async function fetchSession() {
-  return auth.api.getSession({ headers: await headers() });
+  "use cache: private";
+  cacheLife("days");
+
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (session) cacheTag(`account:${session.user.id}`);
+  return session;
 }
 
 export const getCurrentUser = cache(async (): Promise<AccountUser> => {

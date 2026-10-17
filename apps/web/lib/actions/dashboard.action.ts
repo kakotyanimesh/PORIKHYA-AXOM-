@@ -1,6 +1,5 @@
 "use server";
 
-import { cache } from "react";
 import { cacheLife, cacheTag } from "next/cache";
 import { prisma, type Prisma } from "@repo/db";
 import { getCurrentUser } from "@/lib/utils/current-user";
@@ -91,10 +90,8 @@ function toAttempt(r: AttemptRow): DashboardAttempt {
 // "use cache" boundary by living in this wrapper, not the cached fetch below.
 export async function getUserDashboardStats(): Promise<UserDashboardStats> {
   const user = await getCurrentUser();
-  return fetchUserDashboardStatsForRender(user.id, user.name);
+  return fetchUserDashboardStats(user.id, user.name);
 }
-
-const fetchUserDashboardStatsForRender = cache(fetchUserDashboardStats);
 
 // Persistent server cache keyed by the authenticated user's ID and name. The
 // session is resolved before this function is called, so authorization stays
@@ -103,7 +100,7 @@ async function fetchUserDashboardStats(
   userId: string,
   userName: string,
 ): Promise<UserDashboardStats> {
-  "use cache";
+  "use cache: private";
   cacheLife("days");
   cacheTag(`dashboard:${userId}`);
 
