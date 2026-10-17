@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Card } from "@repo/ui/components/card";
-import { RoutePending } from "@/components/route-pending";
 import { Button } from "@repo/ui/components/button";
 import {
   getRecentSeries,
@@ -11,6 +10,10 @@ import {
 } from "@/lib/actions/dashboard.action";
 import { ScoreTrendCard } from "@/components/dashboard/score-trend-card";
 import { DashboardReveal, RevealItem } from "@/components/dashboard/reveal";
+import {
+  OverviewSkeleton,
+  RowsSkeleton,
+} from "@/components/dashboard/skeletons";
 import { LinkPending } from "@/components/link-pending";
 
 // press feedback + color hover on a single row. Matches the app's Button press
@@ -24,7 +27,7 @@ export default function DashboardPage() {
   return (
     <DashboardReveal>
       {/* per-user block — streams behind Suspense so the shell paints first */}
-      <Suspense fallback={<RoutePending />}>
+      <Suspense fallback={<OverviewSkeleton />}>
         <Overview />
       </Suspense>
 
@@ -48,7 +51,7 @@ export default function DashboardPage() {
                 <LinkPending />
               </Button>
             </div>
-            <Suspense fallback={<RoutePending />}>
+            <Suspense fallback={<RowsSkeleton />}>
               <RecentRows />
             </Suspense>
           </Card>

@@ -55,10 +55,8 @@ const subscriptionSelect = {
   _count: { select: { subscription_exams: true } },
 } satisfies Prisma.SubscriptionSelect;
 
-// Identity comes from the session, never from a caller-supplied argument — this
-// is an exported action, so a userId param would be a trivial IDOR (read anyone's
-// subs). getCurrentUser's redirect stays outside the "use cache" boundary by
-// living in this wrapper, not the cached fetch below.
+// Identity comes from the session, never from a caller-supplied argument. The
+// authenticated user ID is passed only to the user-scoped data cache.
 export async function getMySubscriptions(): Promise<MySubscription[]> {
   const user = await getCurrentUser();
   return fetchMySubscriptions(user.id);
@@ -67,7 +65,7 @@ export async function getMySubscriptions(): Promise<MySubscription[]> {
 // Persistent server cache keyed by authenticated user ID. Invalidated when the
 // user subscribes/cancels. Plans stack, so return all, newest first.
 async function fetchMySubscriptions(userId: string): Promise<MySubscription[]> {
-  "use cache: private";
+  "use cache";
   cacheLife("days");
   cacheTag(`subscription:${userId}`);
 

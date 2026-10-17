@@ -84,10 +84,8 @@ function toAttempt(r: AttemptRow): DashboardAttempt {
   };
 }
 
-// Identity comes from the session, never from caller-supplied arguments — this is
-// an exported action, so userId/userName params would be a trivial IDOR (read
-// anyone's attempt history). getCurrentUser's redirect stays outside the
-// "use cache" boundary by living in this wrapper, not the cached fetch below.
+// Identity comes from the session, never from caller-supplied arguments. The
+// authenticated user ID is passed only to the user-scoped data cache.
 export async function getUserDashboardStats(): Promise<UserDashboardStats> {
   const user = await getCurrentUser();
   return fetchUserDashboardStats(user.id, user.name);
@@ -100,8 +98,8 @@ async function fetchUserDashboardStats(
   userId: string,
   userName: string,
 ): Promise<UserDashboardStats> {
-  "use cache: private";
-  cacheLife("days");
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
   cacheTag(`dashboard:${userId}`);
 
   const rows = await prisma.examAttempt.findMany({
