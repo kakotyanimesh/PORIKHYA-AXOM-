@@ -67,7 +67,7 @@ export function UnlockButton({
       <Button
         size="sm"
         type="button"
-        variant="secondary"
+        variant="default"
         className="w-22"
         onClick={() => setOpen(true)}
       >
@@ -118,16 +118,23 @@ export function UnlockButton({
               type="button"
               disabled={pending}
               onClick={buyWholePack}
-              className="flex items-center gap-3 rounded-xl border p-4 text-left transition-colors hover:bg-muted disabled:opacity-60"
+              className="relative flex items-center gap-3 rounded-xl border-2 border-green-500 bg-green-50 p-4 text-left transition-colors hover:bg-green-100 disabled:opacity-60 dark:bg-green-950/30 dark:hover:bg-green-950/50"
             >
-              <LayersIcon className="size-5 shrink-0 text-muted-foreground" />
+              <div className="absolute -top-2 right-4 rounded-full bg-green-500 px-2 py-0.5 text-xs font-semibold text-white">
+                Recommended
+              </div>
+              <LayersIcon className="size-5 shrink-0 text-green-600 dark:text-green-400" />
               <span className="flex-1">
-                <span className="block font-medium">Whole series pack</span>
-                <span className="block text-sm text-muted-foreground">
+                <span className="block font-semibold text-green-700 dark:text-green-300">
+                  Whole series pack
+                </span>
+                <span className="block text-sm text-green-600 dark:text-green-400">
                   Unlock every test in {seriesName}
                 </span>
               </span>
-              <span className="text-sm font-medium text-primary">View plans →</span>
+              <span className="text-sm font-semibold text-green-700 dark:text-green-300">
+                View plans →
+              </span>
             </button>
           </div>
         </DialogContent>

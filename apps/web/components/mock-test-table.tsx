@@ -91,6 +91,7 @@ export function MockTestTable({
                   <Button
                     size="sm"
                     className={"w-22"}
+                    variant={"outline"}
                     render={
                       <Link
                         href={`/all-test-series/${seriesName}/${test.id}`}

@@ -20,7 +20,7 @@ export default function UserLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <Suspense fallback={<AppSidebarSkeleton className="hidden md:flex" />}>
         <AppSidebar
           className="hidden md:flex"
