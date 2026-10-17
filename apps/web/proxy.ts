@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@repo/auth";
 import { getSessionCookie } from "@repo/auth/cookies";
 
 const AUTH_PATHS = new Set(["/signin", "/signup"]);
 
-export default function proxy(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   const sessionCookie = getSessionCookie(request);
   const { pathname } = request.nextUrl;
 
-  // Keep auth pages reachable even when an old/expired session cookie exists.
-  // Redirecting based only on cookie presence can otherwise create a
-  // /signin <-> /dashboard loop.
   if (AUTH_PATHS.has(pathname)) {
+    if (sessionCookie) {
+      const session = await auth.api.getSession({ headers: request.headers });
+      if (session) {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+    }
     return NextResponse.next();
   }
 
