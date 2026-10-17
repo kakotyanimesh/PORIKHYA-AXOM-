@@ -17,6 +17,7 @@ import { SparklesIcon, BadgeCheckIcon, LogOutIcon } from "lucide-react";
 import { authClient } from "@repo/auth/client";
 import { Skeleton } from "@repo/ui/components/skeleton";
 import { accountInitials } from "./account-initials";
+import { clearMockTestStatusCache } from "@/components/mock-test-status-cache";
 
 export type AccountUser = { id: string; name: string; email: string; image?: string | null };
 
@@ -41,6 +42,7 @@ export function AccountMenuContent({ user }: { user: AccountUser }) {
       console.error("Logout failed", error);
       return;
     }
+    clearMockTestStatusCache();
     router.replace("/signin");
   }
 

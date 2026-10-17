@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { verifyPayment, type OrderResult } from "@/lib/actions/checkout.action";
+import { clearMockTestStatusCache } from "@/components/mock-test-status-cache";
 
 // minimal shape of what checkout.js hands the handler on success
 type RazorpayHandlerResponse = {
@@ -71,6 +72,7 @@ export function useRazorpayCheckout() {
           toast.dismiss(verifying);
           if (res.ok) {
             toast.success("Payment successful — access unlocked.");
+            clearMockTestStatusCache();
             if (opts?.onSuccess) opts.onSuccess();
             else router.refresh();
           } else {

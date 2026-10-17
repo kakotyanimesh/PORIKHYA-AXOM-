@@ -1,13 +1,9 @@
-import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   getAllSeriesNames,
   getMockTestsBySeriesName,
-  type MockTest,
 } from "@/lib/actions/all-test-series.action";
-import { getCurrentUser } from "@/lib/utils/current-user";
-import { getCachedMockTestStatus } from "@/lib/utils/mock-test-status";
 import { MockTestTable } from "@/components/mock-test-table";
 import {
   Breadcrumb,
@@ -79,49 +75,13 @@ export default async function SeriesMockTestsPage({
         </span>
       </div>
 
-      <Suspense
-        fallback={
-          <MockTestTable
-            mockTests={mockTests}
-            seriesName={series_name}
-            completedExamIds={new Set()}
-            accessibleExamIds={new Set()}
-            pending
-            className="mt-4"
-          />
-        }
-      >
-        <MockTestTableWithAttempts
-          mockTests={mockTests}
-          seriesName={series_name}
-        />
-      </Suspense>
+      <MockTestTable
+        mockTests={mockTests}
+        seriesName={series_name}
+        completedExamIds={new Set()}
+        accessibleExamIds={new Set()}
+        className="mt-4"
+      />
     </>
-  );
-}
-
-// per-user, never cached — must reflect a submit that just happened, so it's
-// isolated in its own Suspense boundary instead of blocking the static shell
-async function MockTestTableWithAttempts({
-  mockTests,
-  seriesName,
-}: {
-  mockTests: MockTest[];
-  seriesName: string;
-}) {
-  const examIds = mockTests.map((t) => t.id);
-  const user = await getCurrentUser();
-  const { completedExamIds, accessibleExamIds } = await getCachedMockTestStatus(
-    user.id,
-    examIds,
-  );
-  return (
-    <MockTestTable
-      mockTests={mockTests}
-      seriesName={seriesName}
-      completedExamIds={new Set(completedExamIds)}
-      accessibleExamIds={new Set(accessibleExamIds)}
-      className="mt-4"
-    />
   );
 }

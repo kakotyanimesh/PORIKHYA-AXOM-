@@ -1,4 +1,7 @@
+"use client";
+
 import type { CSSProperties } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { FileTextIcon, ClockIcon, ChartColumnIcon } from "lucide-react";
 import {
@@ -13,26 +16,57 @@ import { Button } from "@repo/ui/components/button";
 import { Skeleton } from "@repo/ui/components/skeleton";
 import { cn } from "@repo/ui/lib/utils";
 import type { MockTest } from "@/lib/actions/all-test-series.action";
+import { getMockTestTableStatus } from "@/lib/actions/start-exam-attempt.action";
 import { LinkPending } from "./link-pending";
 import { UnlockButton } from "./checkout/unlock-button";
+import {
+  readMockTestStatusCache,
+  loadMockTestStatus,
+  getMockTestStatusCacheRevision,
+} from "./mock-test-status-cache";
 
 export function MockTestTable({
   mockTests,
   seriesName,
   completedExamIds,
   accessibleExamIds,
-  pending,
   className,
 }: {
   mockTests: MockTest[];
   seriesName: string;
   completedExamIds: Set<string>;
   accessibleExamIds: Set<string>;
-  // per-user access still streaming — show a placeholder instead of guessing
-  // locked, which would flash an Unlock button on already-owned tests
-  pending?: boolean;
   className?: string;
 }) {
+  const examIds = useMemo(() => mockTests.map((test) => test.id), [mockTests]);
+  const examIdsKey = examIds.join(",");
+  const cachedStatus = readMockTestStatusCache(seriesName);
+  const cacheRevision = getMockTestStatusCacheRevision();
+  const [, setVersion] = useState(0);
+  const status = cachedStatus;
+
+  useEffect(() => {
+    if (readMockTestStatusCache(seriesName)) return;
+
+    let active = true;
+    loadMockTestStatus(seriesName, () => getMockTestTableStatus(examIds))
+      .then(() => {
+        if (active) setVersion((version) => version + 1);
+      })
+      .catch(() => undefined);
+
+    return () => {
+      active = false;
+    };
+  }, [cacheRevision, cachedStatus, examIds, examIdsKey, seriesName]);
+
+  const resolvedCompletedIds = status
+    ? new Set(status.completedExamIds)
+    : completedExamIds;
+  const resolvedAccessibleIds = status
+    ? new Set(status.accessibleExamIds)
+    : accessibleExamIds;
+
   return (
     <div className={cn("overflow-hidden rounded-2xl border", className)}>
       <Table>
@@ -75,9 +109,9 @@ export function MockTestTable({
                 {test.duration_minutes} min
               </TableCell>
               <TableCell className="text-end">
-                {pending ? (
+                {!status ? (
                   <Skeleton className="ml-auto h-8 w-22 rounded-md" />
-                ) : completedExamIds.has(test.id) ? (
+                ) : resolvedCompletedIds.has(test.id) ? (
                   <Button
                     size="sm"
                     variant={"outline"}
@@ -87,7 +121,7 @@ export function MockTestTable({
                     <ChartColumnIcon />
                     Analyse
                   </Button>
-                ) : test.is_free || accessibleExamIds.has(test.id) ? (
+                ) : test.is_free || resolvedAccessibleIds.has(test.id) ? (
                   <Button
                     size="sm"
                     className={"w-22"}

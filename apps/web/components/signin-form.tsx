@@ -12,6 +12,7 @@ import { Checkbox } from "@repo/ui/components/checkbox";
 import { authClient, googleAuthEnabled } from "@repo/auth/client";
 import { signinSchema } from "@/lib/validations/signin.validation";
 import { signin } from "@/lib/actions/signin.action";
+import { clearMockTestStatusCache } from "@/components/mock-test-status-cache";
 
 export function SigninForm() {
   const router = useRouter();
@@ -34,6 +35,7 @@ export function SigninForm() {
         return;
       }
       toast.success("Signed in.", { richColors: true });
+      clearMockTestStatusCache();
       router.replace("/dashboard");
     });
   }
@@ -59,9 +61,10 @@ export function SigninForm() {
           type="button"
           variant="outline"
           className="w-full"
-          onClick={() =>
-            authClient.signIn.social({ provider: "google", callbackURL: "/" })
-          }
+          onClick={() => {
+            clearMockTestStatusCache();
+            void authClient.signIn.social({ provider: "google", callbackURL: "/" });
+          }}
         >
           Continue with Google
         </Button>

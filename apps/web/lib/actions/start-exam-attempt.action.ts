@@ -4,6 +4,7 @@ import { Prisma, prisma } from "@repo/db";
 import { getCurrentUser } from "@/lib/utils/current-user";
 import { hasExamAccess } from "@/lib/utils/subscription-access";
 import { enforceRateLimit } from "@/lib/utils/rate-limit";
+import { getCachedMockTestStatus } from "@/lib/utils/mock-test-status";
 import {
   startExamAttemptSchema,
   type StartExamAttemptInput,
@@ -61,6 +62,20 @@ export async function startExamAttempt(
 }
 
 export type ExamAttemptStatus = { attempted: false } | { attempted: true; completed: boolean };
+
+// Called by the test-series table only when its browser-side status cache misses.
+export async function getMockTestTableStatus(examIds: string[]) {
+  if (
+    !Array.isArray(examIds) ||
+    examIds.length > 100 ||
+    examIds.some((id) => typeof id !== "string" || id.length === 0)
+  ) {
+    throw new Error("Invalid exam IDs");
+  }
+
+  const user = await getCurrentUser();
+  return getCachedMockTestStatus(user.id, examIds);
+}
 
 // read-only check for the instructions page — must run before rendering the
 // Start Test gate, not just react to a click, or a reload silently re-offers
