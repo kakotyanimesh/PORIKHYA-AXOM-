@@ -82,8 +82,8 @@ export function Pricing() {
               style={{ "--reveal-i": i } as React.CSSProperties}
               className={
                 t.highlight
-                  ? "reveal landing-card relative overflow-hidden rounded-3xl border-2 border-primary bg-gradient-to-b from-primary/[0.06] to-background p-8 transition-transform duration-200 ease-out lg:-mt-4 lg:pb-10 [@media(hover:hover)]:hover:-translate-y-1"
-                  : "reveal landing-card relative overflow-hidden rounded-3xl border border-border/60 bg-background p-8 transition-transform duration-200 ease-out [@media(hover:hover)]:hover:-translate-y-1"
+                  ? "reveal landing-card relative overflow-hidden rounded-3xl border-2 border-primary bg-gradient-to-b from-primary/[0.06] to-background p-8 lg:-mt-4 lg:pb-10"
+                  : "reveal landing-card relative overflow-hidden rounded-3xl border border-border/60 bg-background p-8"
               }
             >
               {t.highlight && (
@@ -105,7 +105,7 @@ export function Pricing() {
               <Button
                 variant={t.highlight ? "default" : "outline"}
                 size="lg"
-                className="mt-6 w-full"
+                className="mt-6 w-full transition-transform duration-200 ease-out [@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                 render={<Link href={t.href} />}
               >
                 {t.cta}

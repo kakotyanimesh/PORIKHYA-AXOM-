@@ -10,7 +10,7 @@ export function CountUp({
   decimals = 0,
   prefix = "",
   suffix = "",
-  duration = 1100,
+  duration = 1800,
   className,
 }: {
   to: number;
@@ -55,8 +55,15 @@ export function CountUp({
     return () => io.disconnect();
   }, [to, duration]);
 
+  const finalValue = `${prefix}${to.toFixed(decimals)}${suffix}`;
+
   return (
-    <span ref={ref} className={className}>
+    <span
+      ref={ref}
+      className={`inline-block tabular-nums ${className ?? ""}`}
+      style={{ minWidth: `${finalValue.length}ch` }}
+      aria-label={finalValue}
+    >
       {prefix}
       {value.toFixed(decimals)}
       {suffix}

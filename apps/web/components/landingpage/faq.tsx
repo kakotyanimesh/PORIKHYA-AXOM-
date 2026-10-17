@@ -40,6 +40,7 @@ export function Faq() {
           {FAQ.map((item, i) => (
             <details
               key={item.q}
+              name="landing-faq"
               className="faq-item group rounded-2xl border border-border/60 bg-background px-5 py-4 transition-colors open:bg-muted/30 hover:border-border [&_summary::-webkit-details-marker]:hidden"
             >
               <summary className="flex cursor-pointer list-none items-center gap-4 text-sm font-medium">
