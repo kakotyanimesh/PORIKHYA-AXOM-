@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { clearAccountDataCache } from "@/components/account/account-data-cache";
 
 const TOAST_PARAMS = [
   ["profile_error", "error"],
@@ -28,6 +29,7 @@ export function AccountToasts() {
       if (!value) continue;
       fired = true;
       toast[tone](MESSAGES[key] ?? value);
+      if (key === "profile_success") clearAccountDataCache();
     }
     // strip the one-shot query params without a client navigation (no page
     // flash, no re-fetch) — we never wanted to route, only clean the URL

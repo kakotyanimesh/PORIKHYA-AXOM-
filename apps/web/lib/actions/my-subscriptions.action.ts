@@ -45,6 +45,11 @@ export type PlanCatalog = {
   categories: CategoryPlanGroup[];
 };
 
+export type SubscriptionPageData = {
+  subscriptions: MySubscription[];
+  catalog: PlanCatalog;
+};
+
 const subscriptionSelect = {
   id: true,
   started_at: true,
@@ -60,6 +65,14 @@ const subscriptionSelect = {
 export async function getMySubscriptions(): Promise<MySubscription[]> {
   const user = await getCurrentUser();
   return fetchMySubscriptions(user.id);
+}
+
+export async function getSubscriptionPageData(): Promise<SubscriptionPageData> {
+  const [subscriptions, catalog] = await Promise.all([
+    getMySubscriptions(),
+    getPlanCatalog(),
+  ]);
+  return { subscriptions, catalog };
 }
 
 // Persistent server cache keyed by authenticated user ID. Invalidated when the

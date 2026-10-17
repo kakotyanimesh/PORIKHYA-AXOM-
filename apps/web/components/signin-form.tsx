@@ -14,6 +14,9 @@ import { signinSchema } from "@/lib/validations/signin.validation";
 import { signin } from "@/lib/actions/signin.action";
 import { clearMockTestStatusCache } from "@/components/mock-test-status-cache";
 import { clearDashboardDataCache } from "@/components/dashboard/dashboard-data-cache";
+import { clearPlanCatalogCache } from "@/components/subscriptions/subscription-page-cache";
+import { clearExamResultCache } from "@/components/exam-result/exam-result-cache";
+import { clearAccountDataCache } from "@/components/account/account-data-cache";
 
 export function SigninForm() {
   const router = useRouter();
@@ -38,6 +41,9 @@ export function SigninForm() {
       toast.success("Signed in.", { richColors: true });
       clearMockTestStatusCache();
       clearDashboardDataCache();
+      clearPlanCatalogCache();
+      clearExamResultCache();
+      clearAccountDataCache();
       router.replace("/dashboard");
     });
   }
@@ -66,6 +72,9 @@ export function SigninForm() {
           onClick={() => {
             clearMockTestStatusCache();
             clearDashboardDataCache();
+            clearPlanCatalogCache();
+            clearExamResultCache();
+            clearAccountDataCache();
             void authClient.signIn.social({ provider: "google", callbackURL: "/" });
           }}
         >

@@ -13,6 +13,9 @@ import { signupSchema } from "@/lib/validations/signup.validation";
 import { signup } from "@/lib/actions/signup.action";
 import { clearMockTestStatusCache } from "@/components/mock-test-status-cache";
 import { clearDashboardDataCache } from "@/components/dashboard/dashboard-data-cache";
+import { clearPlanCatalogCache } from "@/components/subscriptions/subscription-page-cache";
+import { clearExamResultCache } from "@/components/exam-result/exam-result-cache";
+import { clearAccountDataCache } from "@/components/account/account-data-cache";
 
 function passwordStrength(password: string) {
   let score = 0;
@@ -84,6 +87,9 @@ export function SignupForm() {
           onClick={() => {
             clearMockTestStatusCache();
             clearDashboardDataCache();
+            clearPlanCatalogCache();
+            clearExamResultCache();
+            clearAccountDataCache();
             void authClient.signIn.social({ provider: "google", callbackURL: "/" });
           }}
         >
