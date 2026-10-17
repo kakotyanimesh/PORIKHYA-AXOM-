@@ -24,6 +24,7 @@ import { useExamTimer } from "@/hooks/use-exam-timer";
 import { useLazyQuestions } from "@/hooks/use-lazy-questions";
 import { submitExamAttempt } from "@/lib/actions/submit-exam-attempt.action";
 import { clearMockTestStatusCache } from "@/components/mock-test-status-cache";
+import { clearDashboardDataCache } from "@/components/dashboard/dashboard-data-cache";
 import type { ExamAttemptInit } from "@/lib/actions/lazyquestions.action";
 import { QuestionPalette } from "./question-palette";
 import { QuestionPanel } from "./question-panel";
@@ -83,6 +84,7 @@ export function ExamAttemptShell({
         })),
       });
       clearMockTestStatusCache();
+      clearDashboardDataCache();
       lazy.reset();
       router.push(`/exams/${examId}/result`);
     } catch {

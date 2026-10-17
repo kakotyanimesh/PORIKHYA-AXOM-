@@ -13,6 +13,7 @@ import { authClient, googleAuthEnabled } from "@repo/auth/client";
 import { signinSchema } from "@/lib/validations/signin.validation";
 import { signin } from "@/lib/actions/signin.action";
 import { clearMockTestStatusCache } from "@/components/mock-test-status-cache";
+import { clearDashboardDataCache } from "@/components/dashboard/dashboard-data-cache";
 
 export function SigninForm() {
   const router = useRouter();
@@ -36,6 +37,7 @@ export function SigninForm() {
       }
       toast.success("Signed in.", { richColors: true });
       clearMockTestStatusCache();
+      clearDashboardDataCache();
       router.replace("/dashboard");
     });
   }
@@ -63,6 +65,7 @@ export function SigninForm() {
           className="w-full"
           onClick={() => {
             clearMockTestStatusCache();
+            clearDashboardDataCache();
             void authClient.signIn.social({ provider: "google", callbackURL: "/" });
           }}
         >

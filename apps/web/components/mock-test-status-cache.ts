@@ -9,6 +9,17 @@ export const MOCK_TEST_STATUS_TTL_MS = 60_000;
 const cache = new Map<string, { value: MockTestStatus; savedAt: number }>();
 const requests = new Map<string, Promise<MockTestStatus>>();
 let revision = 0;
+const listeners = new Set<() => void>();
+
+function notify() {
+  revision += 1;
+  for (const listener of listeners) listener();
+}
+
+export function subscribeMockTestStatusCache(listener: () => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
 
 function key(seriesName: string) {
   return seriesName;
@@ -27,13 +38,6 @@ export function readMockTestStatusCache(
   return entry.value;
 }
 
-export function writeMockTestStatusCache(
-  seriesName: string,
-  value: MockTestStatus,
-) {
-  cache.set(key(seriesName), { value, savedAt: Date.now() });
-}
-
 export function loadMockTestStatus(
   seriesName: string,
   fetchStatus: () => Promise<MockTestStatus>,
@@ -50,7 +54,8 @@ export function loadMockTestStatus(
   request = fetchStatus()
     .then((value) => {
       if (revision === startedAtRevision) {
-        writeMockTestStatusCache(seriesName, value);
+        cache.set(cacheKey, { value, savedAt: Date.now() });
+        notify();
       }
       return value;
     })
@@ -64,7 +69,7 @@ export function loadMockTestStatus(
 export function clearMockTestStatusCache() {
   cache.clear();
   requests.clear();
-  revision += 1;
+  notify();
 }
 
 export function getMockTestStatusCacheRevision() {

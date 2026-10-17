@@ -45,6 +45,12 @@ export type DashboardSeries = {
   testCount: number;
 };
 
+export type DashboardPageData = {
+  stats: UserDashboardStats;
+  series: DashboardSeries[];
+  todayLabel: string;
+};
+
 // per-user stats block — everything that changes when the user submits an exam
 export type UserDashboardStats = {
   userName: string;
@@ -197,4 +203,16 @@ export async function getTodayLabel(): Promise<string> {
   "use cache";
   cacheLife("hours");
   return weekdayFormatter.format(new Date());
+}
+
+// One authenticated payload for the dashboard client cache. The personal
+// stats query is shared by the overview and recent rows instead of being
+// requested by two independent streamed components.
+export async function getDashboardPageData(): Promise<DashboardPageData> {
+  const [stats, series, todayLabel] = await Promise.all([
+    getUserDashboardStats(),
+    getRecentSeries(),
+    getTodayLabel(),
+  ]);
+  return { stats, series, todayLabel };
 }

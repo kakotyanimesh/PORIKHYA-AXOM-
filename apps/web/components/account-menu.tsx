@@ -18,6 +18,7 @@ import { authClient } from "@repo/auth/client";
 import { Skeleton } from "@repo/ui/components/skeleton";
 import { accountInitials } from "./account-initials";
 import { clearMockTestStatusCache } from "@/components/mock-test-status-cache";
+import { clearDashboardDataCache } from "@/components/dashboard/dashboard-data-cache";
 
 export type AccountUser = { id: string; name: string; email: string; image?: string | null };
 
@@ -43,6 +44,7 @@ export function AccountMenuContent({ user }: { user: AccountUser }) {
       return;
     }
     clearMockTestStatusCache();
+    clearDashboardDataCache();
     router.replace("/signin");
   }
 

@@ -12,6 +12,7 @@ import { authClient, googleAuthEnabled } from "@repo/auth/client";
 import { signupSchema } from "@/lib/validations/signup.validation";
 import { signup } from "@/lib/actions/signup.action";
 import { clearMockTestStatusCache } from "@/components/mock-test-status-cache";
+import { clearDashboardDataCache } from "@/components/dashboard/dashboard-data-cache";
 
 function passwordStrength(password: string) {
   let score = 0;
@@ -82,6 +83,7 @@ export function SignupForm() {
           className="w-full"
           onClick={() => {
             clearMockTestStatusCache();
+            clearDashboardDataCache();
             void authClient.signIn.social({ provider: "google", callbackURL: "/" });
           }}
         >

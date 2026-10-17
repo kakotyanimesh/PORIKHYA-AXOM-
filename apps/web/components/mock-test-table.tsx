@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { FileTextIcon, ClockIcon, ChartColumnIcon } from "lucide-react";
 import {
@@ -23,6 +23,7 @@ import {
   readMockTestStatusCache,
   loadMockTestStatus,
   getMockTestStatusCacheRevision,
+  subscribeMockTestStatusCache,
 } from "./mock-test-status-cache";
 
 export function MockTestTable({
@@ -41,23 +42,19 @@ export function MockTestTable({
   const examIds = useMemo(() => mockTests.map((test) => test.id), [mockTests]);
   const examIdsKey = examIds.join(",");
   const cachedStatus = readMockTestStatusCache(seriesName);
-  const cacheRevision = getMockTestStatusCacheRevision();
-  const [, setVersion] = useState(0);
+  const cacheRevision = useSyncExternalStore(
+    subscribeMockTestStatusCache,
+    getMockTestStatusCacheRevision,
+    () => 0,
+  );
   const status = cachedStatus;
 
   useEffect(() => {
     if (readMockTestStatusCache(seriesName)) return;
 
-    let active = true;
     loadMockTestStatus(seriesName, () => getMockTestTableStatus(examIds))
-      .then(() => {
-        if (active) setVersion((version) => version + 1);
-      })
+      .then(() => undefined)
       .catch(() => undefined);
-
-    return () => {
-      active = false;
-    };
   }, [cacheRevision, cachedStatus, examIds, examIdsKey, seriesName]);
 
   const resolvedCompletedIds = status
