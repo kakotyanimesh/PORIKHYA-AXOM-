@@ -47,8 +47,6 @@ export function SignupForm() {
       const result = await signup(parsed.data);
       if (!result.success) {
         toast.error(result.error, { richColors: true });
-        // Account already exists → send them where they can actually get in.
-        if (result.alreadyExists) router.push("/signin");
         return;
       }
       toast.success("Your account has been created. You can sign in now.", { richColors: true });
@@ -99,8 +97,10 @@ export function SignupForm() {
         <div className="auth-field-enter flex flex-col gap-2">
           <Label htmlFor="username">Username</Label>
           <Input
-          placeholder="username_"
             id="username"
+            name="username"
+            autoComplete="nickname"
+            placeholder="username_"
             maxLength={30}
             minLength={3}
             value={values.username}
@@ -112,8 +112,10 @@ export function SignupForm() {
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
+            name="email"
             placeholder="example@email.com"
             type="email"
+            autoComplete="email"
             value={values.email}
             onChange={handleChange("email")}
             required
@@ -123,8 +125,10 @@ export function SignupForm() {
           <Label htmlFor="phone_number">Phone number</Label>
           <Input
             id="phone_number"
+            name="phone_number"
             placeholder="10 digit Indian Number"
             type="tel"
+            autoComplete="tel-national"
             maxLength={10}
             value={values.phone_number}
             onChange={handleChange("phone_number")}
@@ -135,11 +139,13 @@ export function SignupForm() {
           <Label htmlFor="password">Password</Label>
           <div className="relative">
             <Input
-            placeholder="8 character password"
+              placeholder="8 character password"
               minLength={8}
               maxLength={20}
               id="password"
+              name="password"
               type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
               value={values.password}
               onChange={handleChange("password")}
               required
@@ -189,7 +195,7 @@ export function SignupForm() {
       </p>*/}
       <div className="text-xs text-muted-foreground flex flex-row items-center align-baseline gap-1">
         <p>By creating an account you agree to our</p>
-        <Link href={"/"}>Terms &amp; Privacy Policy.</Link>
+        <Link href="/privacypolicy">Terms &amp; Privacy Policy.</Link>
       </div>
     </div>
   );

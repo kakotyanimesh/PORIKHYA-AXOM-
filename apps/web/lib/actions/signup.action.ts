@@ -7,7 +7,7 @@ import { enforceRateLimit, RateLimitExceededError } from "@/lib/utils/rate-limit
 
 export type SignupResult =
   | { success: true }
-  | { success: false; error: string; alreadyExists?: boolean };
+  | { success: false; error: string };
 
 export async function signup(input: SignupInput): Promise<SignupResult> {
   try {
@@ -50,7 +50,6 @@ export async function signup(input: SignupInput): Promise<SignupResult> {
           : "phone number";
     return {
       success: false,
-      alreadyExists: true,
       error: `An account with this ${field} already exists. Please sign in instead.`,
     };
   }

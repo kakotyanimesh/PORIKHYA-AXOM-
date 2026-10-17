@@ -78,7 +78,9 @@ export function SigninForm() {
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
+            name="email"
             type="email"
+            autoComplete="username"
             placeholder="example@gmail.com"
             value={values.email}
             onChange={(e) =>
@@ -92,6 +94,8 @@ export function SigninForm() {
           <div className="relative">
             <Input
               id="password"
+              name="password"
+              autoComplete="current-password"
               placeholder="your password here"
               minLength={8}
               maxLength={20}

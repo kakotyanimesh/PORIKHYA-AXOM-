@@ -1,11 +1,17 @@
 import Link from "next/link";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { auth } from "@repo/auth";
 import { Logo } from "@repo/ui/components/logo";
 
-export default function AuthLayout({
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (session) redirect("/dashboard");
+
   return (
     <div className="flex min-h-svh flex-col">
       <header className="flex justify-center p-6">
