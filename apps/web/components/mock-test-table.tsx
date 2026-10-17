@@ -10,7 +10,6 @@ import {
   TableRow,
 } from "@repo/ui/components/table";
 import { Button } from "@repo/ui/components/button";
-import { Skeleton } from "@repo/ui/components/skeleton";
 import { cn } from "@repo/ui/lib/utils";
 import type { MockTest } from "@/lib/actions/all-test-series.action";
 import { LinkPending } from "./link-pending";
@@ -28,8 +27,6 @@ export function MockTestTable({
   seriesName: string;
   completedExamIds: Set<string>;
   accessibleExamIds: Set<string>;
-  // per-user access still streaming — show a placeholder instead of guessing
-  // locked, which would flash an Unlock button on already-owned tests
   pending?: boolean;
   className?: string;
 }) {
@@ -76,7 +73,7 @@ export function MockTestTable({
               </TableCell>
               <TableCell className="text-end">
                 {pending ? (
-                  <Skeleton className="ml-auto h-8 w-22 rounded-md" />
+                  <div className="ml-auto h-8 w-22" aria-hidden="true" />
                 ) : completedExamIds.has(test.id) ? (
                   <Button
                     size="sm"

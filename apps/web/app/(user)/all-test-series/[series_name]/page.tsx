@@ -100,8 +100,6 @@ export default async function SeriesMockTestsPage({
   );
 }
 
-// per-user, never cached — must reflect a submit that just happened, so it's
-// isolated in its own Suspense boundary instead of blocking the static shell
 async function MockTestTableWithAttempts({
   mockTests,
   seriesName,
@@ -109,12 +107,13 @@ async function MockTestTableWithAttempts({
   mockTests: MockTest[];
   seriesName: string;
 }) {
-  const examIds = mockTests.map((t) => t.id);
+  const examIds = mockTests.map((test) => test.id);
   const user = await getCurrentUser();
   const { completedExamIds, accessibleExamIds } = await getCachedMockTestStatus(
     user.id,
     examIds,
   );
+
   return (
     <MockTestTable
       mockTests={mockTests}
