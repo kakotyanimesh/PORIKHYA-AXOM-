@@ -158,7 +158,10 @@ export async function verifyPayment(
     if (!result.granted && result.error) {
       return { ok: false, error: result.error };
     }
-    if (result.userId) updateTag(`subscription:${result.userId}`);
+    if (result.userId) {
+      updateTag(`subscription:${result.userId}`);
+      updateTag(`exam-status:${result.userId}`);
+    }
     return { ok: true };
   } catch (err) {
     console.error("verifyPayment grant failed", { razorpay_order_id, err });

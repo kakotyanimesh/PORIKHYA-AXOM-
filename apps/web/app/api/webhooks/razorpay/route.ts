@@ -23,7 +23,10 @@ export async function POST(req: Request): Promise<Response> {
     const entity = event.payload?.payment?.entity;
     if (entity?.order_id && entity.id) {
       const result = await grantForOrder(entity.order_id, entity.id);
-      if (result.userId) updateTag(`subscription:${result.userId}`);
+      if (result.userId) {
+        updateTag(`subscription:${result.userId}`);
+        updateTag(`exam-status:${result.userId}`);
+      }
     }
   }
 

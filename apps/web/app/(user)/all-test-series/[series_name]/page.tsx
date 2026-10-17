@@ -6,9 +6,8 @@ import {
   getMockTestsBySeriesName,
   type MockTest,
 } from "@/lib/actions/all-test-series.action";
-import { getCompletedExamIds } from "@/lib/actions/start-exam-attempt.action";
 import { getCurrentUser } from "@/lib/utils/current-user";
-import { getAccessibleExamIds } from "@/lib/utils/subscription-access";
+import { getCachedMockTestStatus } from "@/lib/utils/mock-test-status";
 import { MockTestTable } from "@/components/mock-test-table";
 import {
   Breadcrumb,
@@ -112,16 +111,16 @@ async function MockTestTableWithAttempts({
 }) {
   const examIds = mockTests.map((t) => t.id);
   const user = await getCurrentUser();
-  const [completedExamIds, accessibleExamIds] = await Promise.all([
-    getCompletedExamIds(examIds),
-    getAccessibleExamIds(user.id, examIds),
-  ]);
+  const { completedExamIds, accessibleExamIds } = await getCachedMockTestStatus(
+    user.id,
+    examIds,
+  );
   return (
     <MockTestTable
       mockTests={mockTests}
       seriesName={seriesName}
-      completedExamIds={completedExamIds}
-      accessibleExamIds={accessibleExamIds}
+      completedExamIds={new Set(completedExamIds)}
+      accessibleExamIds={new Set(accessibleExamIds)}
       className="mt-4"
     />
   );

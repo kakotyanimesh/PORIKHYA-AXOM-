@@ -185,9 +185,10 @@ export async function submitExamAttempt(
     data: { ...result, completed_at: new Date() },
   });
 
-  // new attempt changes the graph, stats and recent-attempts — updateTag forces
-  // an immediate refresh (read-your-writes) so the dashboard is fresh next load.
+  // Invalidate the dashboard and test-table status after this write so both
+  // reflect the submission immediately on the next render.
   updateTag(`dashboard:${user.id}`);
+  updateTag(`exam-status:${user.id}`);
 
   return result;
 }
