@@ -17,7 +17,7 @@ export default function Home() {
       <main>
         <Hero />
         <Ticker />
-        {/*<HowItWorks />*/}
+        {/* <HowItWorks /> */}
         <SneakPeek />
         <Coverage />
         <Pricing />

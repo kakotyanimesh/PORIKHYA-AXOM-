@@ -88,7 +88,7 @@ export function Pricing() {
             >
               {t.highlight && (
                 <span className="absolute right-6 top-6 inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground">
-                  <Sparkles className="size-3" /> Most popular
+                   Most popular
                 </span>
               )}
               <p className="text-sm font-medium text-muted-foreground">
@@ -105,7 +105,7 @@ export function Pricing() {
               <Button
                 variant={t.highlight ? "default" : "outline"}
                 size="lg"
-                className="mt-6 w-full transition-transform duration-200 ease-out [@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                className="mt-6 w-full transition-transform duration-200 ease-out "
                 render={<Link href={t.href} />}
               >
                 {t.cta}
