@@ -15,6 +15,7 @@ export type QuestionActionResult =
   | { success: false; error: string };
 
 function invalidate(examId: string, subsectionId?: string | null) {
+  updateTag("pyq:all");
   updateTag(`exam-sections:${examId}`);
   updateTag(`exam:${examId}`);
   updateTag(`exam-questions:${examId}:${subsectionId ?? "ungrouped"}`);
@@ -61,6 +62,7 @@ export async function createQuestionsBatch(
   const subsectionIds = new Set(questions.map((q) => q.subsection_id ?? null));
   updateTag(`exam:${exam_id}`);
   updateTag(`exam-sections:${exam_id}`);
+  updateTag("pyq:all");
   for (const sid of subsectionIds) {
     updateTag(`exam-questions:${exam_id}:${sid ?? "ungrouped"}`);
   }

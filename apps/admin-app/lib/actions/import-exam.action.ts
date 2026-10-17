@@ -175,5 +175,6 @@ export async function commitImport(jsonText: string): Promise<ImportCommitResult
   updateTag("exam-series:all");
   updateTag(`exam-series:${exam.series_name}`);
   updateTag(`exam:${examId}`);
+  updateTag("exam-categories");
   return { success: true, examId, questionCount: questions.length };
 }

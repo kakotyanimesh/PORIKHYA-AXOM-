@@ -80,6 +80,7 @@ export type PyqPaper = Prisma.ExamGetPayload<{ select: typeof pyqDetailSelect }>
 
 export async function getPyqPaperBySlug(slug: string): Promise<PyqPaper | null> {
   "use cache";
+  cacheTag("pyq:all");
   cacheTag(`pyq:${slug}`);
   cacheLife("days");
 

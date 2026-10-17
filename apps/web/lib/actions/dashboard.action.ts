@@ -1,5 +1,6 @@
 "use server";
 
+import { cache } from "react";
 import { cacheLife, cacheTag } from "next/cache";
 import { prisma, type Prisma } from "@repo/db";
 import { getCurrentUser } from "@/lib/utils/current-user";
@@ -90,17 +91,19 @@ function toAttempt(r: AttemptRow): DashboardAttempt {
 // "use cache" boundary by living in this wrapper, not the cached fetch below.
 export async function getUserDashboardStats(): Promise<UserDashboardStats> {
   const user = await getCurrentUser();
-  return fetchUserDashboardStats(user.id, user.name);
+  return fetchUserDashboardStatsForRender(user.id, user.name);
 }
 
-// Per-user, private cache. Held indefinitely and invalidated explicitly when
-// the user submits an exam (revalidateTag(`dashboard:${userId}`) in
-// submit-exam-attempt.action) — that's what refreshes the graph/stats/recent.
+const fetchUserDashboardStatsForRender = cache(fetchUserDashboardStats);
+
+// Persistent server cache keyed by the authenticated user's ID and name. The
+// session is resolved before this function is called, so authorization stays
+// request-aware. Invalidated when that user submits an exam.
 async function fetchUserDashboardStats(
   userId: string,
   userName: string,
 ): Promise<UserDashboardStats> {
-  "use cache: private";
+  "use cache";
   cacheLife("days");
   cacheTag(`dashboard:${userId}`);
 
@@ -168,7 +171,7 @@ export async function getRecentSeries(): Promise<DashboardSeries[]> {
   // row per series is its latest exam and insertion order gives recent series
   // first. Take 3.
   const seriesRows = await prisma.exam.findMany({
-    where: { is_active: true },
+    where: { is_active: true, is_pyq_public: false },
     select: { series_name: true, subject: true },
     orderBy: { created_at: "desc" },
   });

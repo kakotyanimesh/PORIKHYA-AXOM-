@@ -1,7 +1,6 @@
 import { cache } from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { cacheLife, cacheTag } from "next/cache";
 import { auth } from "@repo/auth";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
@@ -16,16 +15,10 @@ export type AdminUser = {
   image: string | null | undefined;
 };
 
-// Private-cached session read. cacheComponents (Next 16) requires uncached
-// request data (headers) to sit in a cache/Suspense boundary, else it blocks
-// the whole route. Mirrors apps/web getCurrentUser.
+// Session lookup remains request-aware. React.cache below deduplicates it only
+// within the current render, without persisting an authorization decision.
 async function fetchSession() {
-  "use cache: private";
-  cacheLife("days");
-
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (session) cacheTag(`account:${session.user.id}`);
-  return session;
+  return auth.api.getSession({ headers: await headers() });
 }
 
 // Server-side authorization gate for the CMS. Logged-out -> /signin.

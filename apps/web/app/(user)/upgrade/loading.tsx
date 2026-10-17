@@ -1,13 +1,5 @@
-import { Skeleton } from "@repo/ui/components/skeleton";
+import { RoutePending } from "@/components/route-pending";
 
 export default function UpgradeLoading() {
-  return (
-    <>
-      <Skeleton className="h-7 w-32" />
-      <div className="mt-4 space-y-2">
-        <Skeleton className="h-4 w-full max-w-sm" />
-        <Skeleton className="h-4 w-full max-w-xs" />
-      </div>
-    </>
-  );
+  return <RoutePending />;
 }

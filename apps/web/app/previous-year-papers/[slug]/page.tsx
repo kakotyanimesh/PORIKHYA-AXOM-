@@ -95,7 +95,7 @@ export default async function PreviousYearPaperPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(quizJsonLd(paper, slug)),
+          __html: JSON.stringify(quizJsonLd(paper, slug)).replace(/</g, "\\u003c"),
         }}
       />
 

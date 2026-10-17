@@ -60,6 +60,7 @@ export function TestSeriesGrid({ groups }: { groups: TestSeriesGroup[] }) {
                           src={group.imageUrl}
                           alt={group.seriesName}
                           fill
+                          unoptimized
                           loading="eager"
                           className="object-cover"
                           sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"

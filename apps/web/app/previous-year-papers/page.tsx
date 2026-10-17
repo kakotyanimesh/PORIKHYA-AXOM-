@@ -78,6 +78,7 @@ export default async function PreviousYearPapersPage() {
                     <li key={paper.id}>
                       <Link
                         href={`/previous-year-papers/${paper.slug}`}
+                        prefetch={false}
                         className="group flex items-center justify-between gap-4 px-4 py-3.5 transition-colors hover:bg-muted/50"
                       >
                         <span className="min-w-0">

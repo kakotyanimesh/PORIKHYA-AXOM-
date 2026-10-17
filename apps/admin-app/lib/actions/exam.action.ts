@@ -17,6 +17,8 @@ export type ExamActionResult =
 function invalidate(seriesName: string, examId?: string) {
   updateTag("exam-series:all");
   updateTag(`exam-series:${seriesName}`);
+  updateTag("exam-categories");
+  updateTag("pyq:all");
   if (examId) updateTag(`exam:${examId}`);
 }
 
@@ -57,8 +59,15 @@ export async function updateExam(input: UpdateExamInput): Promise<ExamActionResu
     return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
   const { id, ...rest } = parsed.data;
+  const previous = await prisma.exam.findUnique({
+    where: { id },
+    select: { series_name: true },
+  });
   const exam = await prisma.exam.update({ where: { id }, data: toData(rest) });
   invalidate(exam.series_name, exam.id);
+  if (previous && previous.series_name !== exam.series_name) {
+    invalidate(previous.series_name, exam.id);
+  }
   return { success: true, id: exam.id };
 }
 

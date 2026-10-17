@@ -1,6 +1,5 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { revalidateTag } from "next/cache";
 import { auth, APIError } from "@repo/auth";
 import { getCurrentUser } from "@/lib/utils/current-user";
 import { AccountToasts } from "@/components/account-toasts";
@@ -46,9 +45,6 @@ async function updateProfile(formData: FormData) {
     }
     throw error;
   }
-
-  const session = await auth.api.getSession({ headers: requestHeaders });
-  if (session) revalidateTag(`account:${session.user.id}`, "days");
 
   redirect("/account?profile_success=1");
 }

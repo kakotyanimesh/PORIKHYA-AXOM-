@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck } from "lucide-react";
-import { Skeleton } from "@repo/ui/components/skeleton";
+import { RoutePending } from "@/components/route-pending";
 import {
   getMySubscriptions,
   getPlanCatalog,
@@ -16,13 +16,12 @@ export default function MySubscriptionsPage() {
   return (
     <DashboardReveal>
       {/* per-user state streams inside; header is static shell */}
-      <Suspense fallback={<PageSkeleton />}>
+      <Suspense fallback={<RoutePending />}>
         <SubscriptionState />
       </Suspense>
     </DashboardReveal>
   );
 }
-
 async function SubscriptionState() {
   const [subs, catalog] = await Promise.all([
     getMySubscriptions(),
@@ -149,26 +148,5 @@ async function SubscriptionState() {
         </p>
       </RevealItem>
     </>
-  );
-}
-
-function PageSkeleton() {
-  return (
-    <div>
-      <div className="mx-auto max-w-md space-y-3 text-center">
-        <Skeleton className="mx-auto h-6 w-32 rounded-full" />
-        <Skeleton className="mx-auto h-10 w-64" />
-        <Skeleton className="mx-auto h-4 w-80" />
-      </div>
-      <div className="mt-8 grid gap-5 lg:grid-cols-5">
-        <Skeleton className="h-80 rounded-2xl lg:col-span-3" />
-        <Skeleton className="h-80 rounded-2xl lg:col-span-2" />
-      </div>
-      <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {[0, 1, 2].map((i) => (
-          <Skeleton key={i} className="h-64 rounded-2xl" />
-        ))}
-      </div>
-    </div>
   );
 }
